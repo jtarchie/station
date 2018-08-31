@@ -1,0 +1,13 @@
+name: station
+version: 0.1.0
+
+authors:
+  - JT Archie <jarchie@pivotal.io>
+
+targets:
+  station:
+    main: src/station.cr
+
+crystal: 0.26.1
+
+license: MIT

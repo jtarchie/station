@@ -174,6 +174,71 @@ describe Station::Planner do
         {"A", Status::Success},
         {"F", Status::Success},
       }.to_h).should eq ["B", "C", "E", "G"]
+      plan.next({
+        {"A", Status::Success},
+        {"C", Status::Success},
+        {"F", Status::Success},
+      }.to_h).should eq ["B", "D", "E", "G"]
+      plan.next({
+        {"A", Status::Success},
+        {"C", Status::Success},
+        {"D", Status::Success},
+        {"F", Status::Success},
+      }.to_h).should eq ["B", "E", "G"]
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Success},
+        {"C", Status::Success},
+        {"D", Status::Success},
+        {"F", Status::Success},
+      }.to_h).should eq ["E", "G"]
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Success},
+        {"C", Status::Success},
+        {"D", Status::Success},
+        {"F", Status::Success},
+        {"G", Status::Success},
+      }.to_h).should eq ["E"]
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Success},
+        {"C", Status::Success},
+        {"D", Status::Success},
+        {"E", Status::Success},
+        {"F", Status::Success},
+        {"G", Status::Success},
+      }.to_h).should eq ["H"]
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Success},
+        {"C", Status::Success},
+        {"D", Status::Success},
+        {"E", Status::Success},
+        {"F", Status::Success},
+        {"G", Status::Success},
+        {"H", Status::Success},
+      }.to_h).should eq [] of String
+    end
+
+    it "recommends the correct steps on failure" do
+      plan.next({ {"A", Status::Failed} }.to_h).should eq ["B", "C", "E", "F"]
+      plan.next({
+        {"A", Status::Failed},
+        {"B", Status::Failed},
+      }.to_h).should eq ["C", "E", "F"]
+      plan.next({
+        {"A", Status::Failed},
+        {"B", Status::Failed},
+        {"C", Status::Failed},
+      }.to_h).should eq ["E", "F"]
+      plan.next({
+        {"A", Status::Failed},
+        {"B", Status::Failed},
+        {"C", Status::Failed},
+        {"E", Status::Failed},
+        {"F", Status::Failed},
+      }.to_h).should eq [] of String
     end
   end
 end

@@ -53,6 +53,7 @@ module Station
           step.state(current)
         end.uniq!
         return s[0] if s.size == 1
+        return Status::Running if s.includes?(Status::Unstarted)
         return Status::Running if s.includes?(Status::Running)
         return Status::Failed if s.includes?(Status::Failed)
         return Status::Running

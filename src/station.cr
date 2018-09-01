@@ -4,7 +4,6 @@ module Station
 
   enum Status
     Unstarted
-    Pending
     Running
     Success
     Failed

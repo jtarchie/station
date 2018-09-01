@@ -15,11 +15,11 @@ describe Station::Planner do
       plan = serial { task :A }
       [Status::Success,
        Status::Failed,
-       Status::Pending,
        Status::Running,
       ].each do |status|
-        plan.next({:A, status}).should eq([] of String)
-        plan.state({:A, status}).should eq(status)
+        state = { {"A", status} }.to_h
+        plan.next(state).should eq([] of String)
+        plan.state(state).should eq(status)
       end
     end
   end
@@ -35,12 +35,111 @@ describe Station::Planner do
       plan = aggregate { task :A }
       [Status::Success,
        Status::Failed,
-       Status::Pending,
        Status::Running,
       ].each do |status|
-        plan.next({:A, status}).should eq([] of String)
-        plan.state({:A, status}).should eq(status)
+        state = { {"A", status} }.to_h
+        plan.next(state).should eq([] of String)
+        plan.state(state).should eq(status)
       end
+    end
+  end
+
+  context "a serial plan with two steps" do
+    it "returns the step for execution when it hasn't started yet" do
+      plan = serial { task :A; task :B }
+      plan.next.should eq(["A"])
+      plan.state.should eq Status::Unstarted
+
+      state = { {"A", Status::Success} }.to_h
+      plan.next(state).should eq(["B"])
+      plan.state(state).should eq Status::Running
+    end
+
+    it "returns the completed state" do
+      plan = serial { task :A; task :B }
+      state = {
+        {"A", Status::Success},
+        {"B", Status::Success},
+      }.to_h
+      plan.next(state).should eq([] of String)
+      plan.state(state).should eq Status::Success
+
+      state = {
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h
+      plan.next(state).should eq([] of String)
+      plan.state(state).should eq Status::Failed
+
+      state = {
+        {"A", Status::Failed},
+      }.to_h
+      plan.next(state).should eq([] of String)
+      plan.state(state).should eq Status::Failed
+    end
+
+    it "returns the running state" do
+      plan = serial { task :A; task :B }
+      state = {
+        {"A", Status::Success},
+        {"B", Status::Running},
+      }.to_h
+      plan.next(state).should eq([] of String)
+      plan.state(state).should eq Status::Running
+    end
+  end
+
+  context "a parallel plan with two steps" do
+    it "returns the step for execution when it hasn't started yet" do
+      plan = aggregate { task :A; task :B }
+      plan.next.should eq(["A", "B"])
+      plan.state.should eq Status::Unstarted
+
+      state = { {"A", Status::Success} }.to_h
+      plan.next(state).should eq(["B"])
+      plan.state(state).should eq Status::Running
+
+      state = { {"B", Status::Success} }.to_h
+      plan.next(state).should eq(["A"])
+      plan.state(state).should eq Status::Running
+
+      state = { {"B", Status::Running} }.to_h
+      plan.next(state).should eq(["A"])
+      plan.state(state).should eq Status::Running
+    end
+
+    it "returns the completed state" do
+      plan = aggregate { task :A; task :B }
+      state = {
+        {"A", Status::Success},
+        {"B", Status::Success},
+      }.to_h
+      plan.next(state).should eq([] of String)
+      plan.state(state).should eq Status::Success
+
+      state = {
+        {"A", Status::Failed},
+        {"B", Status::Success},
+      }.to_h
+      plan.next(state).should eq([] of String)
+      plan.state(state).should eq Status::Failed
+
+      state = {
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h
+      plan.next(state).should eq([] of String)
+      plan.state(state).should eq Status::Failed
+    end
+
+    it "returns the running state" do
+      plan = aggregate { task :A; task :B }
+      state = {
+        {"A", Status::Success},
+        {"B", Status::Running},
+      }.to_h
+      plan.next(state).should eq([] of String)
+      plan.state(state).should eq Status::Running
     end
   end
 
@@ -66,6 +165,15 @@ describe Station::Planner do
 
     it "has an initial state" do
       plan.next.should eq ["A", "B", "C", "E", "F"]
+      plan.state.should eq Status::Unstarted
+    end
+
+    it "recommends the next steps on success" do
+      plan.next({ {"A", Status::Success} }.to_h).should eq ["B", "C", "E", "F"]
+      plan.next({
+        {"A", Status::Success},
+        {"F", Status::Success},
+      }.to_h).should eq ["B", "C", "E", "G"]
     end
   end
 end

@@ -7,11 +7,6 @@ module Station
         @steps = [] of Step
       end
 
-      def state(current = nil) : Status
-        return current[1] if current
-        return Status::Unstarted
-      end
-
       def task(name)
         @steps.push Task.new(name.to_s)
       end
@@ -34,29 +29,64 @@ module Station
         @name = name
       end
 
-      def next : Array(String)
-        [ @name ]
+      def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
+        return [] of String if current.has_key?(@name)
+        [@name]
+      end
+
+      def state(current : Hash(String, Status) = {} of String => Status) : Status
+        current.fetch(@name, Status::Unstarted)
       end
     end
 
     class Parallel
       include Plan
 
-      def next(current = nil) : Array(String)
-        return [] of String if current
-
+      def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
         @steps.map do |task|
-          task.next
+          task.next(current)
         end.flatten
+      end
+
+      def state(current : Hash(String, Status) = {} of String => Status) : Status
+        s = @steps.map do |step|
+          step.state(current)
+        end.uniq!
+        return s[0] if s.size == 1
+        return Status::Running if s.includes?(Status::Running)
+        return Status::Failed if s.includes?(Status::Failed)
+        return Status::Running
       end
     end
 
     class Serial
       include Plan
 
-      def next(current = nil) : Array(String)
-        return [] of String if current
-        @steps[0].next
+      def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
+        steps = [] of Array(String)
+
+        @steps.each do |step|
+          case step.state(current)
+          when Status::Success
+            next
+          when Status::Failed
+            steps.clear
+            break
+          else
+            steps << step.next(current)
+          end
+        end
+        return steps[0, 1].flatten unless steps.empty?
+        [] of String
+      end
+
+      def state(current : Hash(String, Status) = {} of String => Status) : Status
+        s = @steps.map do |step|
+          step.state(current)
+        end.uniq!
+        return s[0] if s.size == 1
+        return Status::Failed if s.includes?(Status::Failed)
+        return Status::Running
       end
     end
 

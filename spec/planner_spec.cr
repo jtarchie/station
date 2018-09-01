@@ -170,6 +170,7 @@ describe Station::Planner do
 
     it "recommends the next steps on success" do
       plan.next({ {"A", Status::Success} }.to_h).should eq ["B", "C", "E", "F"]
+      plan.state({ {"A", Status::Success} }.to_h).should eq Status::Running
       plan.next({
         {"A", Status::Success},
         {"F", Status::Success},
@@ -219,10 +220,21 @@ describe Station::Planner do
         {"G", Status::Success},
         {"H", Status::Success},
       }.to_h).should eq [] of String
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Success},
+        {"C", Status::Success},
+        {"D", Status::Success},
+        {"E", Status::Success},
+        {"F", Status::Success},
+        {"G", Status::Success},
+        {"H", Status::Success},
+      }.to_h).should eq Status::Success
     end
 
     it "recommends the correct steps on failure" do
       plan.next({ {"A", Status::Failed} }.to_h).should eq ["B", "C", "E", "F"]
+      plan.state({ {"A", Status::Failed} }.to_h).should eq Status::Running
       plan.next({
         {"A", Status::Failed},
         {"B", Status::Failed},
@@ -239,6 +251,13 @@ describe Station::Planner do
         {"E", Status::Failed},
         {"F", Status::Failed},
       }.to_h).should eq [] of String
+      plan.state({
+        {"A", Status::Failed},
+        {"B", Status::Failed},
+        {"C", Status::Failed},
+        {"E", Status::Failed},
+        {"F", Status::Failed},
+      }.to_h).should eq Status::Failed
     end
   end
 end

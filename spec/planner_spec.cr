@@ -282,6 +282,10 @@ describe Station::Planner do
         {"A", Status::Success},
         {"B", Status::Success},
       }.to_h).should eq Status::Running
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h).should eq [] of String
       plan.state({
         {"A", Status::Success},
         {"B", Status::Failed},
@@ -304,6 +308,107 @@ describe Station::Planner do
       plan.state({
         {"A", Status::Success},
         {"B", Status::Success},
+        {"C", Status::Failed},
+      }.to_h).should eq Status::Failed
+    end
+
+    it "only triggers when all parallel steps are successful" do
+      plan = aggregate do
+        task :A
+        task :B
+        success do
+          serial do
+            task :C
+          end
+        end
+      end
+      plan.next.should eq ["A", "B"]
+      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Success},
+      }.to_h).should eq ["C"]
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Success},
+      }.to_h).should eq Status::Running
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h).should eq [] of String
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h).should eq Status::Failed
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Success},
+        {"C", Status::Success},
+      }.to_h).should eq [] of String
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Success},
+        {"C", Status::Success},
+      }.to_h).should eq Status::Success
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Success},
+        {"C", Status::Failed},
+      }.to_h).should eq [] of String
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Success},
+        {"C", Status::Failed},
+      }.to_h).should eq Status::Failed
+    end
+  end
+
+  context "when on failure step is defined" do
+    it "only triggers when either of steps fail serially" do
+      plan = serial do
+        task :A
+        task :B
+        failure do
+          serial do
+            task :C
+          end
+        end
+      end
+      plan.next.should eq ["A"]
+      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Success},
+      }.to_h).should eq [] of String
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Success},
+      }.to_h).should eq Status::Success
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h).should eq ["C"]
+      plan.next({
+        {"A", Status::Failed},
+        {"B", Status::Success},
+      }.to_h).should eq ["C"]
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h).should eq Status::Failed
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+        {"C", Status::Success},
+      }.to_h).should eq [] of String
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+        {"C", Status::Success},
+      }.to_h).should eq Status::Failed
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Failed},
         {"C", Status::Failed},
       }.to_h).should eq Status::Failed
     end
@@ -353,8 +458,5 @@ describe Station::Planner do
         {"C", Status::Failed},
       }.to_h).should eq Status::Failed
     end
-  end
-
-  context "when on failure step is defined" do
   end
 end

@@ -4,6 +4,7 @@ module Station
 
     module Plan
       property success : Step = Noop.new
+      property failure : Step = Noop.new
 
       def initialize
         @steps = [] of Step
@@ -14,8 +15,13 @@ module Station
       end
 
       def success(&block)
-        plan = Success.new
+        plan = Actionable.new
         @success = with plan yield
+      end
+
+      def failure(&block)
+        plan = Actionable.new
+        @failure = with plan yield
       end
 
       def serial(&block)
@@ -61,6 +67,7 @@ module Station
 
       def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
         return @success.next(current) if plan_state(current) == Status::Success
+        return @failure.next(current) if plan_state(current) == Status::Failed
 
         @steps.map do |task|
           task.next(current)
@@ -84,6 +91,8 @@ module Station
 
       def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
         return @success.next(current) if plan_state(current) == Status::Success
+        return @failure.next(current) if plan_state(current) == Status::Failed
+
         steps = [] of Array(String)
 
         @steps.each do |step|
@@ -125,7 +134,7 @@ module Station
       end
     end
 
-    class Success
+    class Actionable
       include DSL
     end
 

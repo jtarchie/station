@@ -1,14 +1,21 @@
 module Station
   module Planner
-    alias Step = Task | Parallel | Serial
+    alias Step = Task | Parallel | Serial | Noop
 
     module Plan
+      property success : Step = Noop.new
+
       def initialize
         @steps = [] of Step
       end
 
       def task(name)
         @steps.push Task.new(name.to_s)
+      end
+
+      def success(&block)
+        plan = Success.new
+        @success = with plan yield
       end
 
       def serial(&block)
@@ -21,6 +28,16 @@ module Station
         plan = Parallel.new
         with plan yield
         @steps.push plan
+      end
+
+      def state(current : Hash(String, Status) = {} of String => Status) : Status
+        s = [
+          plan_state(current),
+          @success.state(current),
+        ].compact.uniq
+        return s.first if s.size == 1
+        return Status::Failed if s.includes?(Status::Failed)
+        return Status::Running
       end
     end
 
@@ -43,15 +60,17 @@ module Station
       include Plan
 
       def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
+        return @success.next(current) if plan_state(current) == Status::Success
+
         @steps.map do |task|
           task.next(current)
         end.flatten
       end
 
-      def state(current : Hash(String, Status) = {} of String => Status) : Status
+      private def plan_state(current : Hash(String, Status) = {} of String => Status) : Status
         s = @steps.map do |step|
           step.state(current)
-        end.uniq!
+        end.compact.uniq!
         return s[0] if s.size == 1
         return Status::Running if s.includes?(Status::Unstarted)
         return Status::Running if s.includes?(Status::Running)
@@ -64,6 +83,7 @@ module Station
       include Plan
 
       def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
+        return @success.next(current) if plan_state(current) == Status::Success
         steps = [] of Array(String)
 
         @steps.each do |step|
@@ -81,10 +101,10 @@ module Station
         [] of String
       end
 
-      def state(current : Hash(String, Status) = {} of String => Status) : Status
+      private def plan_state(current : Hash(String, Status) = {} of String => Status) : Status
         s = @steps.map do |step|
           step.state(current)
-        end.uniq!
+        end.compact.uniq!
         return s[0] if s.size == 1
         return Status::Failed if s.includes?(Status::Failed)
         return Status::Running
@@ -102,6 +122,20 @@ module Station
         plan = Parallel.new
         with plan yield
         plan
+      end
+    end
+
+    class Success
+      include DSL
+    end
+
+    class Noop
+      def next(current)
+        [] of String
+      end
+
+      def state(current)
+        nil
       end
     end
   end

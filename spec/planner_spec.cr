@@ -459,4 +459,60 @@ describe Station::Planner do
       }.to_h).should eq Status::Failed
     end
   end
+
+  context "when a finally step is specified" do
+    it "always runs no matter the state for serial" do
+      plan = serial do
+        task :A
+        finally do
+          serial do
+            task :B
+          end
+        end
+      end
+
+      plan.next.should eq ["A"]
+      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({ {"A", Status::Failed} }.to_h).should eq ["B"]
+      plan.next({
+        {"A", Status::Failed},
+        {"B", Status::Failed},
+      }.to_h).should eq [] of String
+      plan.state({
+        {"A", Status::Failed},
+        {"B", Status::Failed},
+      }.to_h).should eq Status::Failed
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h).should eq Status::Failed
+    end
+
+    it "always runs no matter the state for parallel" do
+      plan = aggregate do
+        task :A
+        finally do
+          serial do
+            task :B
+          end
+        end
+      end
+
+      plan.next.should eq ["A"]
+      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({ {"A", Status::Failed} }.to_h).should eq ["B"]
+      plan.next({
+        {"A", Status::Failed},
+        {"B", Status::Failed},
+      }.to_h).should eq [] of String
+      plan.state({
+        {"A", Status::Failed},
+        {"B", Status::Failed},
+      }.to_h).should eq Status::Failed
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h).should eq Status::Failed
+    end
+  end
 end

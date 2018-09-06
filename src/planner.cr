@@ -5,6 +5,7 @@ module Station
     module Plan
       property success : Step = Noop.new
       property failure : Step = Noop.new
+      property finally : Step = Noop.new
 
       def initialize
         @steps = [] of Step
@@ -24,6 +25,11 @@ module Station
         @failure = with plan yield
       end
 
+      def finally(&block)
+        plan = Actionable.new
+        @finally = with plan yield
+      end
+
       def serial(&block)
         plan = Serial.new
         with plan yield
@@ -40,6 +46,7 @@ module Station
         s = [
           plan_state(current),
           @success.state(current),
+          @finally.state(current),
         ].compact.uniq
         return s.first if s.size == 1
         return Status::Failed if s.includes?(Status::Failed)
@@ -66,12 +73,15 @@ module Station
       include Plan
 
       def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
-        return @success.next(current) if plan_state(current) == Status::Success
-        return @failure.next(current) if plan_state(current) == Status::Failed
-
-        @steps.map do |task|
+        steps = @steps.map do |task|
           task.next(current)
         end.flatten
+        if steps.size == 0
+          steps += @finally.next(current)
+          steps += @success.next(current) if plan_state(current) == Status::Success
+          steps += @failure.next(current) if plan_state(current) == Status::Failed
+        end
+        steps
       end
 
       private def plan_state(current : Hash(String, Status) = {} of String => Status) : Status
@@ -90,9 +100,6 @@ module Station
       include Plan
 
       def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
-        return @success.next(current) if plan_state(current) == Status::Success
-        return @failure.next(current) if plan_state(current) == Status::Failed
-
         steps = [] of Array(String)
 
         @steps.each do |step|
@@ -106,8 +113,10 @@ module Station
             steps << step.next(current)
           end
         end
-        return steps[0, 1].flatten unless steps.empty?
-        [] of String
+        steps += @finally.next(current)
+        steps += @success.next(current) if plan_state(current) == Status::Success
+        steps += @failure.next(current) if plan_state(current) == Status::Failed
+        steps[0, 1].flatten
       end
 
       private def plan_state(current : Hash(String, Status) = {} of String => Status) : Status

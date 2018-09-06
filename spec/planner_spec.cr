@@ -515,4 +515,46 @@ describe Station::Planner do
       }.to_h).should eq Status::Failed
     end
   end
+
+  context "the order precedence for success/failure and finally" do
+    it "recommends success/failure before finally in serial" do
+      plan = serial do
+        task :A
+        success { serial { task :B } }
+        failure { serial { task :C } }
+        finally { serial { task :D } }
+      end
+
+      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Success},
+      }.to_h).should eq ["D"]
+      plan.next({ {"A", Status::Failed} }.to_h).should eq ["C"]
+      plan.next({
+        {"A", Status::Failed},
+        {"C", Status::Success},
+      }.to_h).should eq ["D"]
+    end
+
+    it "recommends success/failure before finally in parallel" do
+      plan = aggregate do
+        task :A
+        success { serial { task :B } }
+        failure { serial { task :C } }
+        finally { serial { task :D } }
+      end
+
+      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Success},
+      }.to_h).should eq ["D"]
+      plan.next({ {"A", Status::Failed} }.to_h).should eq ["C"]
+      plan.next({
+        {"A", Status::Failed},
+        {"C", Status::Success},
+      }.to_h).should eq ["D"]
+    end
+  end
 end

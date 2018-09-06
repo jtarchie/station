@@ -77,9 +77,9 @@ module Station
           task.next(current)
         end.flatten
         if steps.size == 0
-          steps += @finally.next(current)
           steps += @success.next(current) if plan_state(current) == Status::Success
           steps += @failure.next(current) if plan_state(current) == Status::Failed
+          steps += @finally.next(current) if steps.size == 0
         end
         steps
       end
@@ -113,9 +113,9 @@ module Station
             steps << step.next(current)
           end
         end
-        steps += @finally.next(current)
         steps += @success.next(current) if plan_state(current) == Status::Success
         steps += @failure.next(current) if plan_state(current) == Status::Failed
+        steps += @finally.next(current)
         steps[0, 1].flatten
       end
 

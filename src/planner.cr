@@ -1,6 +1,6 @@
 module Station
   module Planner
-    alias Step = Task | Parallel | Serial | Noop
+    alias Step = Task | Parallel | Serial | Try | Noop
 
     module Plan
       property success : Step = Noop.new
@@ -28,6 +28,12 @@ module Station
       def finally(&block)
         plan = Actionable.new
         @finally = with plan yield
+      end
+
+      def try(&block)
+        plan = Try.new
+        with plan yield
+        @steps.push plan
       end
 
       def serial(&block)
@@ -145,6 +151,20 @@ module Station
 
     class Actionable
       include DSL
+    end
+
+    class Try
+      include Plan
+
+      def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
+        @steps.first.next(current)
+      end
+
+      def state(current : Hash(String, Status) = {} of String => Status) : Status
+        s = @steps.first.state(current)
+        return Status::Success if s == Status::Failed
+        return s || Status::Success
+      end
     end
 
     class Noop

@@ -557,4 +557,39 @@ describe Station::Planner do
       }.to_h).should eq ["D"]
     end
   end
+
+  context "when defining a try statement" do
+    it "always returns success" do
+      plan = serial do
+        try { serial { task :A } }
+        task :B
+      end
+
+      plan.next.should eq [ "A" ]
+      plan.next({ {"A", Status::Success} }.to_h).should eq [ "B" ]
+      plan.state({ {"A", Status::Success} }.to_h).should eq Status::Running
+      plan.next({ {"A", Status::Failed} }.to_h).should eq [ "B" ]
+      plan.state({ {"A", Status::Failed} }.to_h).should eq Status::Running
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h).should eq [] of String
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h).should eq Status::Failed
+      plan.next({
+        {"A", Status::Success},
+        {"B", Status::Success},
+      }.to_h).should eq [] of String
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Success},
+      }.to_h).should eq Status::Success
+      plan.state({
+        {"A", Status::Failed},
+        {"B", Status::Success},
+      }.to_h).should eq Status::Success
+    end
+  end
 end

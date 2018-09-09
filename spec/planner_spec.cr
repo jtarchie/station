@@ -565,10 +565,10 @@ describe Station::Planner do
         task :B
       end
 
-      plan.next.should eq [ "A" ]
-      plan.next({ {"A", Status::Success} }.to_h).should eq [ "B" ]
+      plan.next.should eq ["A"]
+      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
       plan.state({ {"A", Status::Success} }.to_h).should eq Status::Running
-      plan.next({ {"A", Status::Failed} }.to_h).should eq [ "B" ]
+      plan.next({ {"A", Status::Failed} }.to_h).should eq ["B"]
       plan.state({ {"A", Status::Failed} }.to_h).should eq Status::Running
       plan.next({
         {"A", Status::Success},

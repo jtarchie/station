@@ -17,7 +17,7 @@ describe Station::Planner do
        Status::Failed,
        Status::Running,
       ].each do |status|
-        state = { {"A", status} }.to_h
+        state = { {"A", [status]} }.to_h
         plan.next(state).should eq([] of String)
         plan.state(state).should eq(status)
       end
@@ -37,7 +37,7 @@ describe Station::Planner do
        Status::Failed,
        Status::Running,
       ].each do |status|
-        state = { {"A", status} }.to_h
+        state = { {"A", [status] } }.to_h
         plan.next(state).should eq([] of String)
         plan.state(state).should eq(status)
       end
@@ -50,7 +50,7 @@ describe Station::Planner do
       plan.next.should eq(["A"])
       plan.state.should eq Status::Unstarted
 
-      state = { {"A", Status::Success} }.to_h
+      state = { { "A", [Status::Success] } }.to_h
       plan.next(state).should eq(["B"])
       plan.state(state).should eq Status::Running
     end
@@ -58,21 +58,21 @@ describe Station::Planner do
     it "returns the completed state" do
       plan = serial { task :A; task :B }
       state = {
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h
       plan.next(state).should eq([] of String)
       plan.state(state).should eq Status::Success
 
       state = {
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h
       plan.next(state).should eq([] of String)
       plan.state(state).should eq Status::Failed
 
       state = {
-        {"A", Status::Failed},
+        { "A", [Status::Failed] },
       }.to_h
       plan.next(state).should eq([] of String)
       plan.state(state).should eq Status::Failed
@@ -81,8 +81,8 @@ describe Station::Planner do
     it "returns the running state" do
       plan = serial { task :A; task :B }
       state = {
-        {"A", Status::Success},
-        {"B", Status::Running},
+        { "A", [Status::Success] },
+        { "B", [Status::Running] },
       }.to_h
       plan.next(state).should eq([] of String)
       plan.state(state).should eq Status::Running
@@ -95,15 +95,15 @@ describe Station::Planner do
       plan.next.should eq(["A", "B"])
       plan.state.should eq Status::Unstarted
 
-      state = { {"A", Status::Success} }.to_h
+      state = { { "A", [Status::Success] } }.to_h
       plan.next(state).should eq(["B"])
       plan.state(state).should eq Status::Running
 
-      state = { {"B", Status::Success} }.to_h
+      state = { { "B", [Status::Success] } }.to_h
       plan.next(state).should eq(["A"])
       plan.state(state).should eq Status::Running
 
-      state = { {"B", Status::Running} }.to_h
+      state = { { "B", [Status::Running] } }.to_h
       plan.next(state).should eq(["A"])
       plan.state(state).should eq Status::Running
     end
@@ -111,22 +111,22 @@ describe Station::Planner do
     it "returns the completed state" do
       plan = aggregate { task :A; task :B }
       state = {
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h
       plan.next(state).should eq([] of String)
       plan.state(state).should eq Status::Success
 
       state = {
-        {"A", Status::Failed},
-        {"B", Status::Success},
+        { "A", [Status::Failed] },
+        { "B", [Status::Success] },
       }.to_h
       plan.next(state).should eq([] of String)
       plan.state(state).should eq Status::Failed
 
       state = {
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h
       plan.next(state).should eq([] of String)
       plan.state(state).should eq Status::Failed
@@ -135,8 +135,8 @@ describe Station::Planner do
     it "returns the running state" do
       plan = aggregate { task :A; task :B }
       state = {
-        {"A", Status::Success},
-        {"B", Status::Running},
+        { "A", [Status::Success] },
+        { "B", [Status::Running] },
       }.to_h
       plan.next(state).should eq([] of String)
       plan.state(state).should eq Status::Running
@@ -169,94 +169,94 @@ describe Station::Planner do
     end
 
     it "recommends the next steps on success" do
-      plan.next({ {"A", Status::Success} }.to_h).should eq ["B", "C", "E", "F"]
-      plan.state({ {"A", Status::Success} }.to_h).should eq Status::Running
+      plan.next({ { "A", [Status::Success] } }.to_h).should eq ["B", "C", "E", "F"]
+      plan.state({ { "A", [Status::Success] } }.to_h).should eq Status::Running
       plan.next({
-        {"A", Status::Success},
-        {"F", Status::Success},
+        { "A", [Status::Success] },
+        { "F", [Status::Success] },
       }.to_h).should eq ["B", "C", "E", "G"]
       plan.next({
-        {"A", Status::Success},
-        {"C", Status::Success},
-        {"F", Status::Success},
+        { "A", [Status::Success] },
+        { "C", [Status::Success] },
+        { "F", [Status::Success] },
       }.to_h).should eq ["B", "D", "E", "G"]
       plan.next({
-        {"A", Status::Success},
-        {"C", Status::Success},
-        {"D", Status::Success},
-        {"F", Status::Success},
+        { "A", [Status::Success] },
+        { "C", [Status::Success] },
+        { "D", [Status::Success] },
+        { "F", [Status::Success] },
       }.to_h).should eq ["B", "E", "G"]
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Success},
-        {"D", Status::Success},
-        {"F", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Success] },
+        { "D", [Status::Success] },
+        { "F", [Status::Success] },
       }.to_h).should eq ["E", "G"]
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Success},
-        {"D", Status::Success},
-        {"F", Status::Success},
-        {"G", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Success] },
+        { "D", [Status::Success] },
+        { "F", [Status::Success] },
+        { "G", [Status::Success] },
       }.to_h).should eq ["E"]
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Success},
-        {"D", Status::Success},
-        {"E", Status::Success},
-        {"F", Status::Success},
-        {"G", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Success] },
+        { "D", [Status::Success] },
+        { "E", [Status::Success] },
+        { "F", [Status::Success] },
+        { "G", [Status::Success] },
       }.to_h).should eq ["H"]
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Success},
-        {"D", Status::Success},
-        {"E", Status::Success},
-        {"F", Status::Success},
-        {"G", Status::Success},
-        {"H", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Success] },
+        { "D", [Status::Success] },
+        { "E", [Status::Success] },
+        { "F", [Status::Success] },
+        { "G", [Status::Success] },
+        { "H", [Status::Success] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Success},
-        {"D", Status::Success},
-        {"E", Status::Success},
-        {"F", Status::Success},
-        {"G", Status::Success},
-        {"H", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Success] },
+        { "D", [Status::Success] },
+        { "E", [Status::Success] },
+        { "F", [Status::Success] },
+        { "G", [Status::Success] },
+        { "H", [Status::Success] },
       }.to_h).should eq Status::Success
     end
 
     it "recommends the correct steps on failure" do
-      plan.next({ {"A", Status::Failed} }.to_h).should eq ["B", "C", "E", "F"]
-      plan.state({ {"A", Status::Failed} }.to_h).should eq Status::Running
+      plan.next({ { "A", [Status::Failed] } }.to_h).should eq ["B", "C", "E", "F"]
+      plan.state({ { "A", [Status::Failed] } }.to_h).should eq Status::Running
       plan.next({
-        {"A", Status::Failed},
-        {"B", Status::Failed},
+        { "A", [Status::Failed] },
+        { "B", [Status::Failed] },
       }.to_h).should eq ["C", "E", "F"]
       plan.next({
-        {"A", Status::Failed},
-        {"B", Status::Failed},
-        {"C", Status::Failed},
+        { "A", [Status::Failed] },
+        { "B", [Status::Failed] },
+        { "C", [Status::Failed] },
       }.to_h).should eq ["E", "F"]
       plan.next({
-        {"A", Status::Failed},
-        {"B", Status::Failed},
-        {"C", Status::Failed},
-        {"E", Status::Failed},
-        {"F", Status::Failed},
+        { "A", [Status::Failed] },
+        { "B", [Status::Failed] },
+        { "C", [Status::Failed] },
+        { "E", [Status::Failed] },
+        { "F", [Status::Failed] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Failed},
-        {"B", Status::Failed},
-        {"C", Status::Failed},
-        {"E", Status::Failed},
-        {"F", Status::Failed},
+        { "A", [Status::Failed] },
+        { "B", [Status::Failed] },
+        { "C", [Status::Failed] },
+        { "E", [Status::Failed] },
+        { "F", [Status::Failed] },
       }.to_h).should eq Status::Failed
     end
   end
@@ -273,42 +273,42 @@ describe Station::Planner do
         end
       end
       plan.next.should eq ["A"]
-      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({ { "A", [Status::Success] } }.to_h).should eq ["B"]
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq ["C"]
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq Status::Running
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq Status::Failed
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Success] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Success] },
       }.to_h).should eq Status::Success
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Failed] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Failed] },
       }.to_h).should eq Status::Failed
     end
 
@@ -323,42 +323,42 @@ describe Station::Planner do
         end
       end
       plan.next.should eq ["A", "B"]
-      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({ { "A", [Status::Success] } }.to_h).should eq ["B"]
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq ["C"]
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq Status::Running
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq Status::Failed
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Success] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Success] },
       }.to_h).should eq Status::Success
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Failed] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Failed] },
       }.to_h).should eq Status::Failed
     end
   end
@@ -375,41 +375,41 @@ describe Station::Planner do
         end
       end
       plan.next.should eq ["A"]
-      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({ { "A", [Status::Success] } }.to_h).should eq ["B"]
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq Status::Success
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq ["C"]
       plan.next({
-        {"A", Status::Failed},
-        {"B", Status::Success},
+        { "A", [Status::Failed] },
+        { "B", [Status::Success] },
       }.to_h).should eq ["C"]
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq Status::Failed
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Failed},
-        {"C", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
+        { "C", [Status::Success] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Failed},
-        {"C", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
+        { "C", [Status::Success] },
       }.to_h).should eq Status::Failed
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Failed},
-        {"C", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
+        { "C", [Status::Failed] },
       }.to_h).should eq Status::Failed
     end
 
@@ -424,38 +424,38 @@ describe Station::Planner do
         end
       end
       plan.next.should eq ["A", "B"]
-      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({ { "A", [Status::Success] } }.to_h).should eq ["B"]
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq ["C"]
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq Status::Running
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq Status::Failed
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Success] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Success] },
       }.to_h).should eq Status::Success
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Failed] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
-        {"C", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+        { "C", [Status::Failed] },
       }.to_h).should eq Status::Failed
     end
   end
@@ -472,19 +472,19 @@ describe Station::Planner do
       end
 
       plan.next.should eq ["A"]
-      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
-      plan.next({ {"A", Status::Failed} }.to_h).should eq ["B"]
+      plan.next({ { "A", [Status::Success] } }.to_h).should eq ["B"]
+      plan.next({ { "A", [Status::Failed] } }.to_h).should eq ["B"]
       plan.next({
-        {"A", Status::Failed},
-        {"B", Status::Failed},
+        { "A", [Status::Failed] },
+        { "B", [Status::Failed] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Failed},
-        {"B", Status::Failed},
+        { "A", [Status::Failed] },
+        { "B", [Status::Failed] },
       }.to_h).should eq Status::Failed
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq Status::Failed
     end
 
@@ -499,19 +499,19 @@ describe Station::Planner do
       end
 
       plan.next.should eq ["A"]
-      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
-      plan.next({ {"A", Status::Failed} }.to_h).should eq ["B"]
+      plan.next({ { "A", [Status::Success] } }.to_h).should eq ["B"]
+      plan.next({ { "A", [Status::Failed] } }.to_h).should eq ["B"]
       plan.next({
-        {"A", Status::Failed},
-        {"B", Status::Failed},
+        { "A", [Status::Failed] },
+        { "B", [Status::Failed] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Failed},
-        {"B", Status::Failed},
+        { "A", [Status::Failed] },
+        { "B", [Status::Failed] },
       }.to_h).should eq Status::Failed
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq Status::Failed
     end
   end
@@ -525,15 +525,15 @@ describe Station::Planner do
         finally { serial { task :D } }
       end
 
-      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({ { "A", [Status::Success] } }.to_h).should eq ["B"]
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq ["D"]
-      plan.next({ {"A", Status::Failed} }.to_h).should eq ["C"]
+      plan.next({ { "A", [Status::Failed] } }.to_h).should eq ["C"]
       plan.next({
-        {"A", Status::Failed},
-        {"C", Status::Success},
+        { "A", [Status::Failed] },
+        { "C", [Status::Success] },
       }.to_h).should eq ["D"]
     end
 
@@ -545,15 +545,15 @@ describe Station::Planner do
         finally { serial { task :D } }
       end
 
-      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
+      plan.next({ { "A", [Status::Success] } }.to_h).should eq ["B"]
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq ["D"]
-      plan.next({ {"A", Status::Failed} }.to_h).should eq ["C"]
+      plan.next({ { "A", [Status::Failed] } }.to_h).should eq ["C"]
       plan.next({
-        {"A", Status::Failed},
-        {"C", Status::Success},
+        { "A", [Status::Failed] },
+        { "C", [Status::Success] },
       }.to_h).should eq ["D"]
     end
   end
@@ -566,29 +566,29 @@ describe Station::Planner do
       end
 
       plan.next.should eq ["A"]
-      plan.next({ {"A", Status::Success} }.to_h).should eq ["B"]
-      plan.state({ {"A", Status::Success} }.to_h).should eq Status::Running
-      plan.next({ {"A", Status::Failed} }.to_h).should eq ["B"]
-      plan.state({ {"A", Status::Failed} }.to_h).should eq Status::Running
+      plan.next({ { "A", [Status::Success] } }.to_h).should eq ["B"]
+      plan.state({ { "A", [Status::Success] } }.to_h).should eq Status::Running
+      plan.next({ { "A", [Status::Failed] } }.to_h).should eq ["B"]
+      plan.state({ { "A", [Status::Failed] } }.to_h).should eq Status::Running
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq Status::Failed
       plan.next({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq [] of String
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Success},
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
       }.to_h).should eq Status::Success
       plan.state({
-        {"A", Status::Failed},
-        {"B", Status::Success},
+        { "A", [Status::Failed] },
+        { "B", [Status::Success] },
       }.to_h).should eq Status::Success
     end
 
@@ -600,12 +600,12 @@ describe Station::Planner do
 
       plan.next.should eq ["A", "B"]
       plan.state({
-        {"A", Status::Success},
-        {"B", Status::Failed},
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
       }.to_h).should eq Status::Success
       plan.state({
-        {"A", Status::Failed},
-        {"B", Status::Failed},
+        { "A", [Status::Failed] },
+        { "B", [Status::Failed] },
       }.to_h).should eq Status::Failed
     end
   end

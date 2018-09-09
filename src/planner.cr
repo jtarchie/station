@@ -48,7 +48,7 @@ module Station
         @steps.push plan
       end
 
-      def state(current : Hash(String, Status) = {} of String => Status) : Status
+      def state(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Status
         s = [
           plan_state(current),
           @success.state(current),
@@ -65,20 +65,20 @@ module Station
         @name = name
       end
 
-      def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
+      def next(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Array(String)
         return [] of String if current.has_key?(@name)
         [@name]
       end
 
-      def state(current : Hash(String, Status) = {} of String => Status) : Status
-        current.fetch(@name, Status::Unstarted)
+      def state(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Status
+        current.fetch(@name, [Status::Unstarted]).first
       end
     end
 
     class Parallel
       include Plan
 
-      def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
+      def next(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Array(String)
         steps = @steps.map do |task|
           task.next(current)
         end.flatten
@@ -90,7 +90,7 @@ module Station
         steps
       end
 
-      private def plan_state(current : Hash(String, Status) = {} of String => Status) : Status
+      private def plan_state(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Status
         s = @steps.map do |step|
           step.state(current)
         end.compact.uniq!
@@ -105,7 +105,7 @@ module Station
     class Serial
       include Plan
 
-      def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
+      def next(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Array(String)
         steps = [] of Array(String)
 
         @steps.each do |step|
@@ -125,7 +125,7 @@ module Station
         steps[0, 1].flatten
       end
 
-      private def plan_state(current : Hash(String, Status) = {} of String => Status) : Status
+      private def plan_state(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Status
         s = @steps.map do |step|
           step.state(current)
         end.compact.uniq!
@@ -156,11 +156,11 @@ module Station
     class Try
       include Plan
 
-      def next(current : Hash(String, Status) = {} of String => Status) : Array(String)
+      def next(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Array(String)
         @steps.first.next(current)
       end
 
-      def state(current : Hash(String, Status) = {} of String => Status) : Status
+      def state(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Status
         s = @steps.first.state(current)
         return Status::Success if s == Status::Failed
         return s || Status::Success

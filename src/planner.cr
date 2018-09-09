@@ -7,7 +7,7 @@ module Station
       property failure : Step = Noop.new
       property finally : Step = Noop.new
 
-      def initialize
+      def initialize(@attempts : Int32 = 1)
         @steps = [] of Step
       end
 
@@ -36,23 +36,26 @@ module Station
         @steps.push plan
       end
 
-      def serial(&block)
-        plan = Serial.new
+      def serial(attempts = 1, &block)
+        plan = Serial.new(attempts)
         with plan yield
         @steps.push plan
       end
 
-      def aggregate(&block)
-        plan = Parallel.new
+      def aggregate(attempts = 1, &block)
+        plan = Parallel.new(attempts)
         with plan yield
         @steps.push plan
       end
 
-      def state(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Status
+      def state(
+        current : Hash(String, Array(Status)) = {} of String => Array(Status),
+        attempt = 1,
+      ) : Status
         s = [
-          plan_state(current),
-          @success.state(current),
-          @finally.state(current),
+          plan_state(current, attempt),
+          @success.state(current, attempt),
+          @finally.state(current, attempt),
         ].compact.uniq
         return s.first if s.size == 1
         return Status::Failed if s.includes?(Status::Failed)
@@ -65,34 +68,46 @@ module Station
         @name = name
       end
 
-      def next(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Array(String)
-        return [] of String if current.has_key?(@name)
+      def next(
+        current : Hash(String, Array(Status)) = {} of String => Array(Status),
+        attempt = 1,
+      ) : Array(String)
+        return [] of String if current.has_key?(@name) && current[@name].size == attempt
         [@name]
       end
 
-      def state(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Status
-        current.fetch(@name, [Status::Unstarted]).first
+      def state(
+        current : Hash(String, Array(Status)) = {} of String => Array(Status),
+        attempt = 1,
+      ) : Status
+        current.fetch(@name, [] of Status)[attempt - 1] rescue Status::Unstarted
       end
     end
 
     class Parallel
       include Plan
 
-      def next(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Array(String)
+      def next(
+        current : Hash(String, Array(Status)) = {} of String => Array(Status),
+        attempt = 1,
+      ) : Array(String)
         steps = @steps.map do |task|
-          task.next(current)
+          task.next(current, attempt)
         end.flatten
         if steps.size == 0
-          steps += @success.next(current) if plan_state(current) == Status::Success
-          steps += @failure.next(current) if plan_state(current) == Status::Failed
-          steps += @finally.next(current) if steps.size == 0
+          steps += @success.next(current, attempt) if plan_state(current, attempt) == Status::Success
+          steps += @failure.next(current, attempt) if plan_state(current, attempt) == Status::Failed
+          steps += @finally.next(current, attempt) if steps.size == 0
         end
         steps
       end
 
-      private def plan_state(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Status
+      private def plan_state(
+        current : Hash(String, Array(Status)) = {} of String => Array(Status),
+        attempt = 1,
+      ) : Status
         s = @steps.map do |step|
-          step.state(current)
+          step.state(current, attempt)
         end.compact.uniq!
         return s[0] if s.size == 1
         return Status::Running if s.includes?(Status::Unstarted)
@@ -105,29 +120,42 @@ module Station
     class Serial
       include Plan
 
-      def next(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Array(String)
-        steps = [] of Array(String)
+      def next(
+        current : Hash(String, Array(Status)) = {} of String => Array(Status),
+        attempt = 1,
+      ) : Array(String)
+        steps  = [] of Array(String)
+        failed = false
 
-        @steps.each do |step|
-          case step.state(current)
-          when Status::Success
-            next
-          when Status::Failed
-            steps.clear
-            break
-          else
-            steps << step.next(current)
+        1.step(to: @attempts).each do |actual|
+          @steps.each do |step|
+            case step.state(current, actual)
+            when Status::Success
+              next
+            when Status::Failed
+              failed = true
+              steps.clear
+              break
+            else
+              steps << step.next(current, actual)
+            end
           end
+          attempt = actual
+          break if steps.size == 0 && !failed
+          break if steps.size > 0
         end
-        steps += @success.next(current) if plan_state(current) == Status::Success
-        steps += @failure.next(current) if plan_state(current) == Status::Failed
-        steps += @finally.next(current)
+        steps += @success.next(current, attempt) if plan_state(current, attempt) == Status::Success
+        steps += @failure.next(current, attempt) if plan_state(current, attempt) == Status::Failed
+        steps += @finally.next(current, attempt)
         steps[0, 1].flatten
       end
 
-      private def plan_state(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Status
+      private def plan_state(
+        current : Hash(String, Array(Status)) = {} of String => Array(Status),
+        attempt = 1,
+      ) : Status
         s = @steps.map do |step|
-          step.state(current)
+          step.state(current, attempt)
         end.compact.uniq!
         return s[0] if s.size == 1
         return Status::Failed if s.includes?(Status::Failed)
@@ -136,14 +164,14 @@ module Station
     end
 
     module DSL
-      def serial(&block) : Serial
-        plan = Serial.new
+      def serial(attempts = 1, &block) : Serial
+        plan = Serial.new(attempts)
         with plan yield
         plan
       end
 
-      def aggregate(&block) : Parallel
-        plan = Parallel.new
+      def aggregate(attempts = 1, &block) : Parallel
+        plan = Parallel.new(attempts)
         with plan yield
         plan
       end
@@ -156,23 +184,29 @@ module Station
     class Try
       include Plan
 
-      def next(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Array(String)
-        @steps.first.next(current)
+      def next(
+        current : Hash(String, Array(Status)) = {} of String => Array(Status),
+        attempt = 1,
+      ) : Array(String)
+        @steps.first.next(current, attempt)
       end
 
-      def state(current : Hash(String, Array(Status)) = {} of String => Array(Status)) : Status
-        s = @steps.first.state(current)
+      def state(
+        current : Hash(String, Array(Status)) = {} of String => Array(Status),
+        attempt = 1,
+      ) : Status
+        s = @steps.first.state(current, attempt)
         return Status::Success if s == Status::Failed
         return s || Status::Success
       end
     end
 
     class Noop
-      def next(current)
+      def next(current, attempt = 1)
         [] of String
       end
 
-      def state(current)
+      def state(current, attempt = 1)
         nil
       end
     end

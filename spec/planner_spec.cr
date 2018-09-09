@@ -609,4 +609,38 @@ describe Station::Planner do
       }.to_h).should eq Status::Failed
     end
   end
+
+  context "when handling attempts" do
+    it "only reruns the tasks" do
+      plan = serial(attempts: 2) do
+        task :A
+        task :B
+        failure { serial { task :C } }
+      end
+
+      plan.next.should eq [ "A" ]
+      plan.next({ { "A", [Status::Success] } }.to_h).should eq ["B"]
+      plan.next({ { "A", [Status::Failed] } }.to_h).should eq ["A"]
+      plan.next({
+        { "A", [Status::Success] },
+        { "B", [Status::Failed] },
+      }.to_h).should eq ["A"]
+      plan.next({
+        { "A", [Status::Success] },
+        { "B", [Status::Success] },
+      }.to_h).should eq [] of String
+      plan.next({
+        {"A", [Status::Success, Status::Failed]},
+        {"B", [Status::Failed]},
+      }.to_h).should eq ["C"]
+      plan.next({
+        {"A", [Status::Success, Status::Success]},
+        {"B", [Status::Failed, Status::Failed]},
+      }.to_h).should eq ["C"]
+      plan.next({
+        {"A", [Status::Success, Status::Success]},
+        {"B", [Status::Failed, Status::Success]},
+      }.to_h).should eq [] of String
+    end
+  end
 end

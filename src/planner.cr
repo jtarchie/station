@@ -50,7 +50,7 @@ module Station
 
       def state(
         current : Hash(String, Array(Status)) = {} of String => Array(Status),
-        attempt = 1,
+        attempt = 1
       ) : Status
         s = [
           plan_state(current, attempt),
@@ -70,15 +70,15 @@ module Station
 
       def next(
         current : Hash(String, Array(Status)) = {} of String => Array(Status),
-        attempt = 1,
+        attempt = 1
       ) : Array(String)
-        return [] of String if current.has_key?(@name) && current[@name].size == attempt
+        return [] of String if current.has_key?(@name) && current[@name].size >= attempt
         [@name]
       end
 
       def state(
         current : Hash(String, Array(Status)) = {} of String => Array(Status),
-        attempt = 1,
+        attempt = 1
       ) : Status
         current.fetch(@name, [] of Status)[attempt - 1] rescue Status::Unstarted
       end
@@ -89,22 +89,28 @@ module Station
 
       def next(
         current : Hash(String, Array(Status)) = {} of String => Array(Status),
-        attempt = 1,
+        attempt = 1
       ) : Array(String)
-        steps = @steps.map do |task|
-          task.next(current, attempt)
-        end.flatten
-        if steps.size == 0
-          steps += @success.next(current, attempt) if plan_state(current, attempt) == Status::Success
-          steps += @failure.next(current, attempt) if plan_state(current, attempt) == Status::Failed
-          steps += @finally.next(current, attempt) if steps.size == 0
+        steps = [] of String
+
+        1.step(to: @attempts).each do |actual|
+          steps = @steps.map do |task|
+            task.next(current, actual)
+          end.flatten
+          attempt = actual
+          return steps if steps.size > 0
+          next if steps.size == 0
         end
-        steps
+
+        steps += @success.next(current, attempt) if plan_state(current, attempt) == Status::Success
+        steps += @failure.next(current, attempt) if plan_state(current, attempt) == Status::Failed
+        steps += @finally.next(current, attempt) if steps.size == 0
+        return steps
       end
 
       private def plan_state(
         current : Hash(String, Array(Status)) = {} of String => Array(Status),
-        attempt = 1,
+        attempt = 1
       ) : Status
         s = @steps.map do |step|
           step.state(current, attempt)
@@ -122,9 +128,9 @@ module Station
 
       def next(
         current : Hash(String, Array(Status)) = {} of String => Array(Status),
-        attempt = 1,
+        attempt = 1
       ) : Array(String)
-        steps  = [] of Array(String)
+        steps = [] of Array(String)
         failed = false
 
         1.step(to: @attempts).each do |actual|
@@ -152,7 +158,7 @@ module Station
 
       private def plan_state(
         current : Hash(String, Array(Status)) = {} of String => Array(Status),
-        attempt = 1,
+        attempt = 1
       ) : Status
         s = @steps.map do |step|
           step.state(current, attempt)
@@ -186,14 +192,14 @@ module Station
 
       def next(
         current : Hash(String, Array(Status)) = {} of String => Array(Status),
-        attempt = 1,
+        attempt = 1
       ) : Array(String)
         @steps.first.next(current, attempt)
       end
 
       def state(
         current : Hash(String, Array(Status)) = {} of String => Array(Status),
-        attempt = 1,
+        attempt = 1
       ) : Status
         s = @steps.first.state(current, attempt)
         return Status::Success if s == Status::Failed

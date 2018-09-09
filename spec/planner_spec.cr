@@ -591,5 +591,22 @@ describe Station::Planner do
         {"B", Status::Success},
       }.to_h).should eq Status::Success
     end
+
+    it "works with parallel" do
+      plan = aggregate do
+        task :A
+        try { aggregate { task :B } }
+      end
+
+      plan.next.should eq ["A", "B"]
+      plan.state({
+        {"A", Status::Success},
+        {"B", Status::Failed},
+      }.to_h).should eq Status::Success
+      plan.state({
+        {"A", Status::Failed},
+        {"B", Status::Failed},
+      }.to_h).should eq Status::Failed
+    end
   end
 end

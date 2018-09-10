@@ -11,3 +11,5 @@ module Station
 end
 
 require "./planner"
+require "./resource"
+require "./check_resource"

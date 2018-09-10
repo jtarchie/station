@@ -1,4 +1,5 @@
 require "./spec_helper"
+require "json"
 
 include Station
 
@@ -17,5 +18,17 @@ describe Station::CheckResource do
   end
 
   context "when given a previous version" do
+    it "returns all the inbetween versions" do
+      resource = Resource.new(
+        name: "1ms",
+        type: "time",
+        source: {"interval" => "1ms"}
+      )
+      checker = CheckResource.new(resource)
+      checker.perform!({
+        "time" => Time::Format::ISO_8601_DATE_TIME.format(Time.now.to_utc)
+      })
+      checker.versions.size.should be > 1
+    end
   end
 end

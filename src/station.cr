@@ -12,4 +12,4 @@ end
 
 require "./planner"
 require "./resource"
-require "./check_resource"
+require "./actions/check_resource"

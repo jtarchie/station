@@ -1,9 +1,9 @@
-require "./spec_helper"
+require "../spec_helper"
 require "json"
 
 include Station
 
-describe Station::CheckResource do
+describe Station::Actions::CheckResource do
   context "when given a brand new resource" do
     it "returns the most recent version" do
       resource = Resource.new(
@@ -11,7 +11,7 @@ describe Station::CheckResource do
         type: "time",
         source: {"interval" => "1ms"}
       )
-      checker = CheckResource.new(resource)
+      checker = Actions::CheckResource.new(resource)
       checker.perform!
       checker.versions.size.should eq 1
     end
@@ -24,9 +24,9 @@ describe Station::CheckResource do
         type: "time",
         source: {"interval" => "1ms"}
       )
-      checker = CheckResource.new(resource)
+      checker = Actions::CheckResource.new(resource)
       checker.perform!({
-        "time" => Time::Format::ISO_8601_DATE_TIME.format(Time.now.to_utc)
+        "time" => Time::Format::ISO_8601_DATE_TIME.format(Time.now.to_utc),
       })
       checker.versions.size.should be > 1
     end

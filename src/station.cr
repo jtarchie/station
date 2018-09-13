@@ -12,4 +12,5 @@ end
 
 require "./planner"
 require "./resource"
+require "./resource_types"
 require "./actions/check_resource"

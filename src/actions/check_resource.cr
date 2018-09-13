@@ -3,10 +3,12 @@ require "json"
 module Station
   module Actions
     class CheckResource
-      property stdout : IO::Memory = IO::Memory.new
-      property stderr : IO::Memory = IO::Memory.new
-
-      def initialize(@resource : Resource)
+      def initialize(
+        @resource : Resource,
+        @resource_types : ResourceTypes = ResourceTypes.new,
+        @stdout : IO::Memory = IO::Memory.new,
+        @stderr : IO::Memory = IO::Memory.new
+      )
       end
 
       def perform!(
@@ -14,7 +16,7 @@ module Station
       )
         Process.run(
           command: "docker",
-          args: ["run", "-i", "--rm", "concourse/#{@resource.type}-resource", "/opt/resource/check"],
+          args: ["run", "-i", "--rm", @resource_types.repository(@resource.type), "/opt/resource/check"],
           output: @stdout,
           error: @stderr,
           input: IO::Memory.new({source: @resource.source, version: version}.to_json)

@@ -41,7 +41,7 @@ module Station
         payload.version
       end
 
-      def metadata : Array(Hash(String, String))
+      def metadata : Array(NamedTuple(name: String, value: String))
         payload.metadata
       end
 
@@ -52,7 +52,7 @@ module Station
       private class Payload
         JSON.mapping(
           version: Hash(String, String),
-          metadata: Array(Hash(String, String))
+          metadata: Array(NamedTuple(name: String, value: String))
         )
       end
     end

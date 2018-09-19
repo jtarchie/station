@@ -43,7 +43,12 @@ describe Station::Actions::GetResource do
       },
     })
 
-    get.version.should eq ({} of String => String)
-    get.metadata.should eq ([] of Hash(String, String))
+    get.version.should eq ({"ref" => "abcd123"})
+    get.metadata.size.should eq 1
+    get.metadata.first["name"].should eq "timestamp"
+    get.metadata.first["value"].to_f.should be <= Time.now.epoch_f
   end
+
+  # TODO: write a test for build params
+  #       they haven't been added as that concept does not exist yet
 end

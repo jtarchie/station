@@ -42,5 +42,8 @@ describe Station::Actions::GetResource do
         "another" => "important value",
       },
     })
+
+    get.version.should eq ({} of String => String)
+    get.metadata.should eq ([] of Hash(String, String))
   end
 end

@@ -35,8 +35,25 @@ module Station
             params:  @params,
           }.to_json)
         )
-        puts @stderr.to_s
-        puts @stdout.to_s
+      end
+
+      def version : Hash(String, String)
+        payload.version
+      end
+
+      def metadata : Array(Hash(String, String))
+        payload.metadata
+      end
+
+      private def payload : Payload
+        @payload ||= Payload.from_json(@stdout.to_s)
+      end
+
+      private class Payload
+        JSON.mapping(
+          version: Hash(String, String),
+          metadata: Array(Hash(String, String))
+        )
       end
     end
   end

@@ -25,14 +25,14 @@ module Station
             "-v", "#{@destionation_dir}:/tmp/build/get",
             "-w", "/tmp/build/get",
             @resource_types.repository(@resource.type),
-            "/opt/resource/in", "/tmp/build/get"
+            "/opt/resource/in", "/tmp/build/get",
           ],
           output: @stdout,
           error: @stderr,
           input: IO::Memory.new({
-            source: @resource.source,
+            source:  @resource.source,
             version: version,
-            params: @params,
+            params:  @params,
           }.to_json)
         )
         puts @stderr.to_s

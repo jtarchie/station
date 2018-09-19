@@ -9,30 +9,38 @@ describe Station::Actions::GetResource do
     type: "echo",
     source: {"key" => "value"}
   )
+  resource_types = ResourceTypes.new
+  resource_types.add("echo", "docker-image", {"repository" => "jtarchie/echo-resource"})
   base_dir = File.expand_path(File.join(__DIR__, "..", "..", "tmp"))
 
-  it "uses a destination directory" do
+  it "uses the params, source, and version by sticking them in the destination dir" do
     get = Actions::GetResource.new(
       resource: resource,
       destionation_dir: File.join(base_dir, Random::Secure.hex),
-      params: {} of String => String
+      resource_types: resource_types,
+      params: {
+        "some"    => "value",
+        "another" => "important value",
+      }
     )
     get.perform!(
       version: {
-        "ref" => "abcd123"
+        "ref" => "abcd123",
       } of String => String
     )
-    contents = File.read(File.join(get.destionation_dir, "version"))
-    contents.chomp.should eq %q[{ "ref": "abcd123" }].chomp
-  end
-
-  it "uses the params" do
-
-  end
-  it "uses the version provided" do
-
-  end
-  it "uses source" do
-
+    contents = File.read(File.join(get.destionation_dir, "echo-request"))
+    payload = JSON.parse(contents)
+    payload.should eq({
+      "source" => {
+        "key" => "value",
+      },
+      "version" => {
+        "ref" => "abcd123",
+      },
+      "params" => {
+        "some"    => "value",
+        "another" => "important value",
+      },
+    })
   end
 end

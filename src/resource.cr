@@ -1,8 +1,8 @@
 module Station
   class Resource
-     getter name : String
-     getter type : String
-     getter source : Hash(String, String)
+    getter name : String
+    getter type : String
+    getter source : Hash(String, String)
 
     def initialize(
       @name : String,

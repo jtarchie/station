@@ -1,6 +1,0 @@
-version: 1.0
-shards:
-  tmpdir:
-    github: marceloboeira/tmpdir.cr
-    commit: 216999c04667f5d5e9e575f41b186ab6e698cb1b
-

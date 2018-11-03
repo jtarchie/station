@@ -13,13 +13,13 @@ TODO: Write usage instructions here
 ## Development
 
 ```
-brew install watchexec
-watchexec --exts cr -- crystal spec
+bundle install
+rspec
 ```
 
 ## Contributing
 
-1. Fork it (<https://github.com/your-github-user/station/fork>)
+1. Fork it (<https://github.com/jtarchie/station/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
@@ -27,4 +27,4 @@ watchexec --exts cr -- crystal spec
 
 ## Contributors
 
-- [your-github-user](https://github.com/your-github-user) JT Archie - creator, maintainer
+- [jtarchie](https://github.com/jtarchie) JT Archie - creator, maintainer

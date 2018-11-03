@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-include Station
-
 describe Station::Planner do
   include Station::Planner::DSL
 
@@ -11,14 +9,14 @@ describe Station::Planner do
     it "returns the step for execution when it hasn't started yet" do
       plan = serial { task :A }
       plan.next.should eq(['A'])
-      plan.state.should eq Status::Unstarted
+      plan.state.should eq Station::Status::Unstarted
     end
 
     it 'returns no steps when the step completes' do
       plan = serial { task :A }
-      [Status::Success,
-       Status::Failed,
-       Status::Running].each do |status|
+      [Station::Status::Success,
+       Station::Status::Failed,
+       Station::Status::Running].each do |status|
         state = { 'A' => [status] }
         plan.next(current: state).should eq([])
         plan.state(current: state).should eq(status)
@@ -30,14 +28,14 @@ describe Station::Planner do
     it "returns the step for execution when it hasn't started yet" do
       plan = aggregate { task :A }
       plan.next.should eq(['A'])
-      plan.state.should eq Status::Unstarted
+      plan.state.should eq Station::Status::Unstarted
     end
 
     it 'returns no steps when the step completes' do
       plan = aggregate { task :A }
-      [Status::Success,
-       Status::Failed,
-       Status::Running].each do |status|
+      [Station::Status::Success,
+       Station::Status::Failed,
+       Station::Status::Running].each do |status|
         state = { 'A' => [status] }
         plan.next(current: state).should eq([])
         plan.state(current: state).should eq(status)
@@ -49,44 +47,44 @@ describe Station::Planner do
     it "returns the step for execution when it hasn't started yet" do
       plan = serial { task :A; task :B }
       plan.next.should eq(['A'])
-      plan.state.should eq Status::Unstarted
+      plan.state.should eq Station::Status::Unstarted
 
-      state = { 'A' => [Status::Success] }
+      state = { 'A' => [Station::Status::Success] }
       plan.next(current: state).should eq(['B'])
-      plan.state(current: state).should eq Status::Running
+      plan.state(current: state).should eq Station::Status::Running
     end
 
     it 'returns the completed state' do
       plan = serial { task :A; task :B }
       state = {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
+        'A' => [Station::Status::Success],
+        'B' => [Station::Status::Success]
       }
       plan.next(current: state).should eq([])
-      plan.state(current: state).should eq Status::Success
+      plan.state(current: state).should eq Station::Status::Success
 
       state = {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h
+        'A' => [Station::Status::Success],
+        'B' => [Station::Status::Failed]
+      }
       plan.next(current: state).should eq([])
-      plan.state(current: state).should eq Status::Failed
+      plan.state(current: state).should eq Station::Status::Failed
 
       state = {
-        'A' => [Status::Failed]
-      }.to_h
+        'A' => [Station::Status::Failed]
+      }
       plan.next(current: state).should eq([])
-      plan.state(current: state).should eq Status::Failed
+      plan.state(current: state).should eq Station::Status::Failed
     end
 
     it 'returns the running state' do
       plan = serial { task :A; task :B }
       state = {
-        'A' => [Status::Success],
-        'B' => [Status::Running]
-      }.to_h
+        'A' => [Station::Status::Success],
+        'B' => [Station::Status::Running]
+      }
       plan.next(current: state).should eq([])
-      plan.state(current: state).should eq Status::Running
+      plan.state(current: state).should eq Station::Status::Running
     end
   end
 
@@ -94,53 +92,53 @@ describe Station::Planner do
     it "returns the step for execution when it hasn't started yet" do
       plan = aggregate { task :A; task :B }
       plan.next.should eq(%w[A B])
-      plan.state.should eq Status::Unstarted
+      plan.state.should eq Station::Status::Unstarted
 
-      state = { 'A' => [Status::Success] }.to_h
+      state = { 'A' => [Station::Status::Success] }
       plan.next(current: state).should eq(['B'])
-      plan.state(current: state).should eq Status::Running
+      plan.state(current: state).should eq Station::Status::Running
 
-      state = { 'B' => [Status::Success] }.to_h
+      state = { 'B' => [Station::Status::Success] }
       plan.next(current: state).should eq(['A'])
-      plan.state(current: state).should eq Status::Running
+      plan.state(current: state).should eq Station::Status::Running
 
-      state = { 'B' => [Status::Running] }.to_h
+      state = { 'B' => [Station::Status::Running] }
       plan.next(current: state).should eq(['A'])
-      plan.state(current: state).should eq Status::Running
+      plan.state(current: state).should eq Station::Status::Running
     end
 
     it 'returns the completed state' do
       plan = aggregate { task :A; task :B }
       state = {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h
+        'A' => [Station::Status::Success],
+        'B' => [Station::Status::Success]
+      }
       plan.next(current: state).should eq([])
-      plan.state(current: state).should eq Status::Success
+      plan.state(current: state).should eq Station::Status::Success
 
       state = {
-        'A' => [Status::Failed],
-        'B' => [Status::Success]
-      }.to_h
+        'A' => [Station::Status::Failed],
+        'B' => [Station::Status::Success]
+      }
       plan.next(current: state).should eq([])
-      plan.state(current: state).should eq Status::Failed
+      plan.state(current: state).should eq Station::Status::Failed
 
       state = {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h
+        'A' => [Station::Status::Success],
+        'B' => [Station::Status::Failed]
+      }
       plan.next(current: state).should eq([])
-      plan.state(current: state).should eq Status::Failed
+      plan.state(current: state).should eq Station::Status::Failed
     end
 
     it 'returns the running state' do
       plan = aggregate { task :A; task :B }
       state = {
-        'A' => [Status::Success],
-        'B' => [Status::Running]
-      }.to_h
+        'A' => [Station::Status::Success],
+        'B' => [Station::Status::Running]
+      }
       plan.next(current: state).should eq([])
-      plan.state(current: state).should eq Status::Running
+      plan.state(current: state).should eq Station::Status::Running
     end
   end
 
@@ -168,99 +166,99 @@ describe Station::Planner do
 
     it 'has an initial state' do
       plan.next.should eq %w[A B C E F]
-      plan.state.should eq Status::Unstarted
+      plan.state.should eq Station::Status::Unstarted
     end
 
     it 'recommends the next steps on success' do
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq %w[B C E F]
-      plan.state(current: { 'A' => [Status::Success] }.to_h).should eq Status::Running
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq %w[B C E F]
+      plan.state(current: { 'A' => [Station::Status::Success] }).should eq Station::Status::Running
       plan.next(current: {
-        'A' => [Status::Success],
-        'F' => [Status::Success]
-      }.to_h).should eq %w[B C E G]
+                  'A' => [Station::Status::Success],
+                  'F' => [Station::Status::Success]
+                }).should eq %w[B C E G]
       plan.next(current: {
-        'A' => [Status::Success],
-        'C' => [Status::Success],
-        'F' => [Status::Success]
-      }.to_h).should eq %w[B D E G]
+                  'A' => [Station::Status::Success],
+                  'C' => [Station::Status::Success],
+                  'F' => [Station::Status::Success]
+                }).should eq %w[B D E G]
       plan.next(current: {
-        'A' => [Status::Success],
-        'C' => [Status::Success],
-        'D' => [Status::Success],
-        'F' => [Status::Success]
-      }.to_h).should eq %w[B E G]
+                  'A' => [Station::Status::Success],
+                  'C' => [Station::Status::Success],
+                  'D' => [Station::Status::Success],
+                  'F' => [Station::Status::Success]
+                }).should eq %w[B E G]
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Success],
-        'D' => [Status::Success],
-        'F' => [Status::Success]
-      }.to_h).should eq %w[E G]
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success],
+                  'C' => [Station::Status::Success],
+                  'D' => [Station::Status::Success],
+                  'F' => [Station::Status::Success]
+                }).should eq %w[E G]
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Success],
-        'D' => [Status::Success],
-        'F' => [Status::Success],
-        'G' => [Status::Success]
-      }.to_h).should eq ['E']
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success],
+                  'C' => [Station::Status::Success],
+                  'D' => [Station::Status::Success],
+                  'F' => [Station::Status::Success],
+                  'G' => [Station::Status::Success]
+                }).should eq ['E']
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Success],
-        'D' => [Status::Success],
-        'E' => [Status::Success],
-        'F' => [Status::Success],
-        'G' => [Status::Success]
-      }.to_h).should eq ['H']
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success],
+                  'C' => [Station::Status::Success],
+                  'D' => [Station::Status::Success],
+                  'E' => [Station::Status::Success],
+                  'F' => [Station::Status::Success],
+                  'G' => [Station::Status::Success]
+                }).should eq ['H']
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Success],
-        'D' => [Status::Success],
-        'E' => [Status::Success],
-        'F' => [Status::Success],
-        'G' => [Status::Success],
-        'H' => [Status::Success]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success],
+                  'C' => [Station::Status::Success],
+                  'D' => [Station::Status::Success],
+                  'E' => [Station::Status::Success],
+                  'F' => [Station::Status::Success],
+                  'G' => [Station::Status::Success],
+                  'H' => [Station::Status::Success]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Success],
-        'D' => [Status::Success],
-        'E' => [Status::Success],
-        'F' => [Status::Success],
-        'G' => [Status::Success],
-        'H' => [Status::Success]
-      }.to_h).should eq Status::Success
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success],
+                   'C' => [Station::Status::Success],
+                   'D' => [Station::Status::Success],
+                   'E' => [Station::Status::Success],
+                   'F' => [Station::Status::Success],
+                   'G' => [Station::Status::Success],
+                   'H' => [Station::Status::Success]
+                 }).should eq Station::Status::Success
     end
 
     it 'recommends the correct steps on failure' do
-      plan.next(current: { 'A' => [Status::Failed] }.to_h).should eq %w[B C E F]
-      plan.state(current: { 'A' => [Status::Failed] }.to_h).should eq Status::Running
+      plan.next(current: { 'A' => [Station::Status::Failed] }).should eq %w[B C E F]
+      plan.state(current: { 'A' => [Station::Status::Failed] }).should eq Station::Status::Running
       plan.next(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Failed]
-      }.to_h).should eq %w[C E F]
+                  'A' => [Station::Status::Failed],
+                  'B' => [Station::Status::Failed]
+                }).should eq %w[C E F]
       plan.next(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Failed],
-        'C' => [Status::Failed]
-      }.to_h).should eq %w[E F]
+                  'A' => [Station::Status::Failed],
+                  'B' => [Station::Status::Failed],
+                  'C' => [Station::Status::Failed]
+                }).should eq %w[E F]
       plan.next(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Failed],
-        'C' => [Status::Failed],
-        'E' => [Status::Failed],
-        'F' => [Status::Failed]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Failed],
+                  'B' => [Station::Status::Failed],
+                  'C' => [Station::Status::Failed],
+                  'E' => [Station::Status::Failed],
+                  'F' => [Station::Status::Failed]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Failed],
-        'C' => [Status::Failed],
-        'E' => [Status::Failed],
-        'F' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Failed],
+                   'B' => [Station::Status::Failed],
+                   'C' => [Station::Status::Failed],
+                   'E' => [Station::Status::Failed],
+                   'F' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
     end
   end
 
@@ -276,43 +274,43 @@ describe Station::Planner do
         end
       end
       plan.next.should eq ['A']
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq ['B']
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq ['C']
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success]
+                }).should eq ['C']
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq Status::Running
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success]
+                 }).should eq Station::Status::Running
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Failed]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Success]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success],
+                  'C' => [Station::Status::Success]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Success]
-      }.to_h).should eq Status::Success
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success],
+                   'C' => [Station::Status::Success]
+                 }).should eq Station::Status::Success
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Failed]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success],
+                  'C' => [Station::Status::Failed]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success],
+                   'C' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
     end
 
     it 'only triggers when all parallel steps are successful' do
@@ -326,43 +324,43 @@ describe Station::Planner do
         end
       end
       plan.next.should eq %w[A B]
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq ['B']
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq ['C']
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success]
+                }).should eq ['C']
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq Status::Running
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success]
+                 }).should eq Station::Status::Running
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Failed]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Success]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success],
+                  'C' => [Station::Status::Success]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Success]
-      }.to_h).should eq Status::Success
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success],
+                   'C' => [Station::Status::Success]
+                 }).should eq Station::Status::Success
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Failed]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success],
+                  'C' => [Station::Status::Failed]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success],
+                   'C' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
     end
   end
 
@@ -378,42 +376,42 @@ describe Station::Planner do
         end
       end
       plan.next.should eq ['A']
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq ['B']
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq Status::Success
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success]
+                 }).should eq Station::Status::Success
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq ['C']
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Failed]
+                }).should eq ['C']
       plan.next(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Success]
-      }.to_h).should eq ['C']
+                  'A' => [Station::Status::Failed],
+                  'B' => [Station::Status::Success]
+                }).should eq ['C']
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed],
-        'C' => [Status::Success]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Failed],
+                  'C' => [Station::Status::Success]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed],
-        'C' => [Status::Success]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Failed],
+                   'C' => [Station::Status::Success]
+                 }).should eq Station::Status::Failed
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed],
-        'C' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Failed],
+                   'C' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
     end
 
     it 'only triggers when all parallel steps are successful' do
@@ -427,39 +425,39 @@ describe Station::Planner do
         end
       end
       plan.next.should eq %w[A B]
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq ['B']
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq ['C']
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success]
+                }).should eq ['C']
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq Status::Running
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success]
+                 }).should eq Station::Status::Running
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Success]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success],
+                  'C' => [Station::Status::Success]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Success]
-      }.to_h).should eq Status::Success
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success],
+                   'C' => [Station::Status::Success]
+                 }).should eq Station::Status::Success
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Failed]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success],
+                  'C' => [Station::Status::Failed]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success],
-        'C' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success],
+                   'C' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
     end
   end
 
@@ -475,20 +473,20 @@ describe Station::Planner do
       end
 
       plan.next.should eq ['A']
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq ['B']
-      plan.next(current: { 'A' => [Status::Failed] }.to_h).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Failed] }).should eq ['B']
       plan.next(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Failed]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Failed],
+                  'B' => [Station::Status::Failed]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Failed],
+                   'B' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
     end
 
     it 'always runs no matter the state for parallel' do
@@ -502,20 +500,20 @@ describe Station::Planner do
       end
 
       plan.next.should eq ['A']
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq ['B']
-      plan.next(current: { 'A' => [Status::Failed] }.to_h).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Failed] }).should eq ['B']
       plan.next(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Failed]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Failed],
+                  'B' => [Station::Status::Failed]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Failed],
+                   'B' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
     end
   end
 
@@ -528,16 +526,16 @@ describe Station::Planner do
         finally { serial { task :D } }
       end
 
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq ['B']
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq ['D']
-      plan.next(current: { 'A' => [Status::Failed] }.to_h).should eq ['C']
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success]
+                }).should eq ['D']
+      plan.next(current: { 'A' => [Station::Status::Failed] }).should eq ['C']
       plan.next(current: {
-        'A' => [Status::Failed],
-        'C' => [Status::Success]
-      }.to_h).should eq ['D']
+                  'A' => [Station::Status::Failed],
+                  'C' => [Station::Status::Success]
+                }).should eq ['D']
     end
 
     it 'recommends success/failure before finally in parallel' do
@@ -548,16 +546,16 @@ describe Station::Planner do
         finally { serial { task :D } }
       end
 
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq ['B']
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq ['D']
-      plan.next(current: { 'A' => [Status::Failed] }.to_h).should eq ['C']
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success]
+                }).should eq ['D']
+      plan.next(current: { 'A' => [Station::Status::Failed] }).should eq ['C']
       plan.next(current: {
-        'A' => [Status::Failed],
-        'C' => [Status::Success]
-      }.to_h).should eq ['D']
+                  'A' => [Station::Status::Failed],
+                  'C' => [Station::Status::Success]
+                }).should eq ['D']
     end
   end
 
@@ -569,30 +567,30 @@ describe Station::Planner do
       end
 
       plan.next.should eq ['A']
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq ['B']
-      plan.state(current: { 'A' => [Status::Success] }.to_h).should eq Status::Running
-      plan.next(current: { 'A' => [Status::Failed] }.to_h).should eq ['B']
-      plan.state(current: { 'A' => [Status::Failed] }.to_h).should eq Status::Running
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq ['B']
+      plan.state(current: { 'A' => [Station::Status::Success] }).should eq Station::Status::Running
+      plan.next(current: { 'A' => [Station::Status::Failed] }).should eq ['B']
+      plan.state(current: { 'A' => [Station::Status::Failed] }).should eq Station::Status::Running
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Failed]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success]
+                }).should eq []
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq Status::Success
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Success]
+                 }).should eq Station::Status::Success
       plan.state(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Success]
-      }.to_h).should eq Status::Success
+                   'A' => [Station::Status::Failed],
+                   'B' => [Station::Status::Success]
+                 }).should eq Station::Status::Success
     end
 
     it 'works with parallel' do
@@ -603,13 +601,13 @@ describe Station::Planner do
 
       plan.next.should eq %w[A B]
       plan.state(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq Status::Success
+                   'A' => [Station::Status::Success],
+                   'B' => [Station::Status::Failed]
+                 }).should eq Station::Status::Success
       plan.state(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Failed]
-      }.to_h).should eq Status::Failed
+                   'A' => [Station::Status::Failed],
+                   'B' => [Station::Status::Failed]
+                 }).should eq Station::Status::Failed
     end
   end
 
@@ -622,32 +620,32 @@ describe Station::Planner do
       end
 
       plan.next.should eq %w[A B]
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq ['B']
-      plan.next(current: { 'A' => [Status::Failed] }.to_h).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Failed] }).should eq ['B']
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq %w[A B]
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Failed]
+                }).should eq %w[A B]
       plan.next(current: {
-        'A' => [Status::Failed],
-        'B' => [Status::Success]
-      }.to_h).should eq %w[A B]
+                  'A' => [Station::Status::Failed],
+                  'B' => [Station::Status::Success]
+                }).should eq %w[A B]
       plan.next(current: {
-        'A' => [Status::Success, Status::Failed],
-        'B' => [Status::Failed]
-      }.to_h).should eq ['B']
+                  'A' => [Station::Status::Success, Station::Status::Failed],
+                  'B' => [Station::Status::Failed]
+                }).should eq ['B']
       plan.next(current: {
-        'A' => [Status::Success, Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq ['B']
+                  'A' => [Station::Status::Success, Station::Status::Success],
+                  'B' => [Station::Status::Failed]
+                }).should eq ['B']
       plan.next(current: {
-        'A' => [Status::Success, Status::Success],
-        'B' => [Status::Failed, Status::Failed]
-      }.to_h).should eq ['C']
+                  'A' => [Station::Status::Success, Station::Status::Success],
+                  'B' => [Station::Status::Failed, Station::Status::Failed]
+                }).should eq ['C']
       plan.next(current: {
-        'A' => [Status::Success, Status::Success],
-        'B' => [Status::Failed, Status::Success]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success, Station::Status::Success],
+                  'B' => [Station::Status::Failed, Station::Status::Success]
+                }).should eq []
     end
 
     it 'only reruns the tasks for serial' do
@@ -658,28 +656,28 @@ describe Station::Planner do
       end
 
       plan.next.should eq ['A']
-      plan.next(current: { 'A' => [Status::Success] }.to_h).should eq ['B']
-      plan.next(current: { 'A' => [Status::Failed] }.to_h).should eq ['A']
+      plan.next(current: { 'A' => [Station::Status::Success] }).should eq ['B']
+      plan.next(current: { 'A' => [Station::Status::Failed] }).should eq ['A']
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Failed]
-      }.to_h).should eq ['A']
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Failed]
+                }).should eq ['A']
       plan.next(current: {
-        'A' => [Status::Success],
-        'B' => [Status::Success]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success],
+                  'B' => [Station::Status::Success]
+                }).should eq []
       plan.next(current: {
-        'A' => [Status::Success, Status::Failed],
-        'B' => [Status::Failed]
-      }.to_h).should eq ['C']
+                  'A' => [Station::Status::Success, Station::Status::Failed],
+                  'B' => [Station::Status::Failed]
+                }).should eq ['C']
       plan.next(current: {
-        'A' => [Status::Success, Status::Success],
-        'B' => [Status::Failed, Status::Failed]
-      }.to_h).should eq ['C']
+                  'A' => [Station::Status::Success, Station::Status::Success],
+                  'B' => [Station::Status::Failed, Station::Status::Failed]
+                }).should eq ['C']
       plan.next(current: {
-        'A' => [Status::Success, Status::Success],
-        'B' => [Status::Failed, Status::Success]
-      }.to_h).should eq []
+                  'A' => [Station::Status::Success, Station::Status::Success],
+                  'B' => [Station::Status::Failed, Station::Status::Success]
+                }).should eq []
     end
   end
 end

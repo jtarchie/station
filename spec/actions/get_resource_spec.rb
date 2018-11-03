@@ -3,20 +3,21 @@
 require 'spec_helper'
 require 'securerandom'
 
-include Station
-
 describe Station::Actions::GetResource do
-  resource = Resource.new(
-    name: 'echo',
-    type: 'echo',
-    source: { 'key' => 'value' }
-  )
-  base_dir = File.expand_path(File.join(__dir__, '..', '..', 'tmp'))
+  let(:resource) do
+    Station::Resource.new(
+      name: 'echo',
+      type: 'echo',
+      source: { 'key' => 'value' }
+    )
+  end
+  # don't use Dir.mktmpdir as it cannot be volume mounted into `docker run`
+  let(:base_dir) { File.expand_path(File.join('..', '..', 'tmp')) }
 
   it 'uses a destination directory' do
-    get = Actions::GetResource.new(
+    get = described_class.new(
       resource: resource,
-      destionation_dir: File.join(base_dir, SecureRandom.hex),
+      destination_dir: File.join(base_dir, SecureRandom.hex),
       params: {}
     )
     get.perform!(
@@ -24,7 +25,7 @@ describe Station::Actions::GetResource do
         'ref' => 'abcd123'
       }
     )
-    contents = File.read(File.join(get.destionation_dir, 'version'))
+    contents = File.read(File.join(get.destination_dir, 'version'))
     contents.chomp.should eq '{ "ref": "abcd123" }'.chomp
   end
 

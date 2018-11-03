@@ -2,17 +2,17 @@
 
 require 'spec_helper'
 
-include Station
-
 describe Station::ResourceTypes do
+  include Station
+
   it 'supports the standard concourse types' do
-    types = ResourceTypes.new
+    types = described_class.new
     types.repository(name: 'time').should eq 'concourse/time-resource:latest'
     types.repository(name: 'git').should eq 'concourse/git-resource:latest'
   end
 
   it 'allows custom resource type' do
-    types = ResourceTypes.new
+    types = described_class.new
     types.add(
       name: 'pull-request',
       type: 'docker-image',
@@ -26,7 +26,7 @@ describe Station::ResourceTypes do
   end
 
   it 'allows custom resource type and tag' do
-    types = ResourceTypes.new
+    types = described_class.new
     types.add(
       name: 'pull-request',
       type: 'docker-image',
@@ -41,7 +41,7 @@ describe Station::ResourceTypes do
   end
 
   it 'allows custom resource types to override defaults' do
-    types = ResourceTypes.new
+    types = described_class.new
     types.add(
       name: 'time',
       type: 'docker-image',

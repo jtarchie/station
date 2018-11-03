@@ -26,7 +26,7 @@ describe Station::Actions::GetResource do
       }
     )
     contents = File.read(File.join(get.destination_dir, 'version'))
-    contents.chomp.should eq '{ "ref": "abcd123" }'.chomp
+    expect(contents.chomp).to eq '{ "ref": "abcd123" }'.chomp
   end
 
   it 'uses the params' do

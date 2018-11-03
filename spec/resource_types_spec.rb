@@ -7,8 +7,8 @@ describe Station::ResourceTypes do
 
   it 'supports the standard concourse types' do
     types = described_class.new
-    types.repository(name: 'time').should eq 'concourse/time-resource:latest'
-    types.repository(name: 'git').should eq 'concourse/git-resource:latest'
+    expect(types.repository(name: 'time')).to eq 'concourse/time-resource:latest'
+    expect(types.repository(name: 'git')).to eq 'concourse/git-resource:latest'
   end
 
   it 'allows custom resource type' do
@@ -20,9 +20,9 @@ describe Station::ResourceTypes do
         'repository' => 'jtarchie/pr'
       }
     )
-    types.repository(name: 'time').should eq 'concourse/time-resource:latest'
-    types.repository(name: 'git').should eq 'concourse/git-resource:latest'
-    types.repository(name: 'pull-request').should eq 'jtarchie/pr:latest'
+    expect(types.repository(name: 'time')).to eq 'concourse/time-resource:latest'
+    expect(types.repository(name: 'git')).to eq 'concourse/git-resource:latest'
+    expect(types.repository(name: 'pull-request')).to eq 'jtarchie/pr:latest'
   end
 
   it 'allows custom resource type and tag' do
@@ -35,9 +35,9 @@ describe Station::ResourceTypes do
         'tag'        => 'testing'
       }
     )
-    types.repository(name: 'time').should eq 'concourse/time-resource:latest'
-    types.repository(name: 'git').should eq 'concourse/git-resource:latest'
-    types.repository(name: 'pull-request').should eq 'jtarchie/pr:testing'
+    expect(types.repository(name: 'time')).to eq 'concourse/time-resource:latest'
+    expect(types.repository(name: 'git')).to eq 'concourse/git-resource:latest'
+    expect(types.repository(name: 'pull-request')).to eq 'jtarchie/pr:testing'
   end
 
   it 'allows custom resource types to override defaults' do
@@ -50,7 +50,7 @@ describe Station::ResourceTypes do
         'tag'        => 'testing'
       }
     )
-    types.repository(name: 'time').should eq 'jtarchie/time:testing'
-    types.repository(name: 'git').should eq 'concourse/git-resource:latest'
+    expect(types.repository(name: 'time')).to eq 'jtarchie/time:testing'
+    expect(types.repository(name: 'git')).to eq 'concourse/git-resource:latest'
   end
 end

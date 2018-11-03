@@ -14,7 +14,7 @@ describe Station::Actions::CheckResource do
       )
       checker = described_class.new(resource: resource)
       checker.perform!
-      checker.versions.size.should eq 1
+      expect(checker.versions.size).to eq 1
     end
   end
 
@@ -31,7 +31,7 @@ describe Station::Actions::CheckResource do
           'time' => Time.now.utc.xmlschema
         }
       )
-      checker.versions.size.should be > 1
+      expect(checker.versions.size).to be > 1
     end
   end
 end

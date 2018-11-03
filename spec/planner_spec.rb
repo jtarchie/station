@@ -173,92 +173,92 @@ describe Station::Planner do
       expect(plan.next(current: { 'A' => [Station::Status::Success] })).to eq %w[B C E F]
       expect(plan.state(current: { 'A' => [Station::Status::Success] })).to eq Station::Status::Running
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'F' => [Station::Status::Success]
-                })).to eq %w[B C E G]
+                         'A' => [Station::Status::Success],
+                         'F' => [Station::Status::Success]
+                       })).to eq %w[B C E G]
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'C' => [Station::Status::Success],
-                  'F' => [Station::Status::Success]
-                })).to eq %w[B D E G]
+                         'A' => [Station::Status::Success],
+                         'C' => [Station::Status::Success],
+                         'F' => [Station::Status::Success]
+                       })).to eq %w[B D E G]
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'C' => [Station::Status::Success],
-                  'D' => [Station::Status::Success],
-                  'F' => [Station::Status::Success]
-                })).to eq %w[B E G]
+                         'A' => [Station::Status::Success],
+                         'C' => [Station::Status::Success],
+                         'D' => [Station::Status::Success],
+                         'F' => [Station::Status::Success]
+                       })).to eq %w[B E G]
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success],
-                  'C' => [Station::Status::Success],
-                  'D' => [Station::Status::Success],
-                  'F' => [Station::Status::Success]
-                })).to eq %w[E G]
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success],
+                         'C' => [Station::Status::Success],
+                         'D' => [Station::Status::Success],
+                         'F' => [Station::Status::Success]
+                       })).to eq %w[E G]
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success],
-                  'C' => [Station::Status::Success],
-                  'D' => [Station::Status::Success],
-                  'F' => [Station::Status::Success],
-                  'G' => [Station::Status::Success]
-                })).to eq ['E']
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success],
+                         'C' => [Station::Status::Success],
+                         'D' => [Station::Status::Success],
+                         'F' => [Station::Status::Success],
+                         'G' => [Station::Status::Success]
+                       })).to eq ['E']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success],
-                  'C' => [Station::Status::Success],
-                  'D' => [Station::Status::Success],
-                  'E' => [Station::Status::Success],
-                  'F' => [Station::Status::Success],
-                  'G' => [Station::Status::Success]
-                })).to eq ['H']
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success],
+                         'C' => [Station::Status::Success],
+                         'D' => [Station::Status::Success],
+                         'E' => [Station::Status::Success],
+                         'F' => [Station::Status::Success],
+                         'G' => [Station::Status::Success]
+                       })).to eq ['H']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success],
-                  'C' => [Station::Status::Success],
-                  'D' => [Station::Status::Success],
-                  'E' => [Station::Status::Success],
-                  'F' => [Station::Status::Success],
-                  'G' => [Station::Status::Success],
-                  'H' => [Station::Status::Success]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success],
+                         'C' => [Station::Status::Success],
+                         'D' => [Station::Status::Success],
+                         'E' => [Station::Status::Success],
+                         'F' => [Station::Status::Success],
+                         'G' => [Station::Status::Success],
+                         'H' => [Station::Status::Success]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success],
-                   'C' => [Station::Status::Success],
-                   'D' => [Station::Status::Success],
-                   'E' => [Station::Status::Success],
-                   'F' => [Station::Status::Success],
-                   'G' => [Station::Status::Success],
-                   'H' => [Station::Status::Success]
-                 })).to eq Station::Status::Success
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success],
+                          'C' => [Station::Status::Success],
+                          'D' => [Station::Status::Success],
+                          'E' => [Station::Status::Success],
+                          'F' => [Station::Status::Success],
+                          'G' => [Station::Status::Success],
+                          'H' => [Station::Status::Success]
+                        })).to eq Station::Status::Success
     end
 
     it 'recommends the correct steps on failure' do
       expect(plan.next(current: { 'A' => [Station::Status::Failed] })).to eq %w[B C E F]
       expect(plan.state(current: { 'A' => [Station::Status::Failed] })).to eq Station::Status::Running
       expect(plan.next(current: {
-                  'A' => [Station::Status::Failed],
-                  'B' => [Station::Status::Failed]
-                })).to eq %w[C E F]
+                         'A' => [Station::Status::Failed],
+                         'B' => [Station::Status::Failed]
+                       })).to eq %w[C E F]
       expect(plan.next(current: {
-                  'A' => [Station::Status::Failed],
-                  'B' => [Station::Status::Failed],
-                  'C' => [Station::Status::Failed]
-                })).to eq %w[E F]
+                         'A' => [Station::Status::Failed],
+                         'B' => [Station::Status::Failed],
+                         'C' => [Station::Status::Failed]
+                       })).to eq %w[E F]
       expect(plan.next(current: {
-                  'A' => [Station::Status::Failed],
-                  'B' => [Station::Status::Failed],
-                  'C' => [Station::Status::Failed],
-                  'E' => [Station::Status::Failed],
-                  'F' => [Station::Status::Failed]
-                })).to eq []
+                         'A' => [Station::Status::Failed],
+                         'B' => [Station::Status::Failed],
+                         'C' => [Station::Status::Failed],
+                         'E' => [Station::Status::Failed],
+                         'F' => [Station::Status::Failed]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Failed],
-                   'B' => [Station::Status::Failed],
-                   'C' => [Station::Status::Failed],
-                   'E' => [Station::Status::Failed],
-                   'F' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Failed],
+                          'B' => [Station::Status::Failed],
+                          'C' => [Station::Status::Failed],
+                          'E' => [Station::Status::Failed],
+                          'F' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
     end
   end
 
@@ -276,41 +276,41 @@ describe Station::Planner do
       expect(plan.next).to eq ['A']
       expect(plan.next(current: { 'A' => [Station::Status::Success] })).to eq ['B']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success]
-                })).to eq ['C']
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success]
+                       })).to eq ['C']
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success]
-                 })).to eq Station::Status::Running
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success]
+                        })).to eq Station::Status::Running
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Failed]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Failed]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success],
-                  'C' => [Station::Status::Success]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success],
+                         'C' => [Station::Status::Success]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success],
-                   'C' => [Station::Status::Success]
-                 })).to eq Station::Status::Success
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success],
+                          'C' => [Station::Status::Success]
+                        })).to eq Station::Status::Success
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success],
-                  'C' => [Station::Status::Failed]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success],
+                         'C' => [Station::Status::Failed]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success],
-                   'C' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success],
+                          'C' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
     end
 
     it 'only triggers when all parallel steps are successful' do
@@ -326,41 +326,41 @@ describe Station::Planner do
       expect(plan.next).to eq %w[A B]
       expect(plan.next(current: { 'A' => [Station::Status::Success] })).to eq ['B']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success]
-                })).to eq ['C']
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success]
+                       })).to eq ['C']
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success]
-                 })).to eq Station::Status::Running
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success]
+                        })).to eq Station::Status::Running
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Failed]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Failed]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success],
-                  'C' => [Station::Status::Success]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success],
+                         'C' => [Station::Status::Success]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success],
-                   'C' => [Station::Status::Success]
-                 })).to eq Station::Status::Success
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success],
+                          'C' => [Station::Status::Success]
+                        })).to eq Station::Status::Success
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success],
-                  'C' => [Station::Status::Failed]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success],
+                         'C' => [Station::Status::Failed]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success],
-                   'C' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success],
+                          'C' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
     end
   end
 
@@ -378,40 +378,40 @@ describe Station::Planner do
       expect(plan.next).to eq ['A']
       expect(plan.next(current: { 'A' => [Station::Status::Success] })).to eq ['B']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success]
-                 })).to eq Station::Status::Success
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success]
+                        })).to eq Station::Status::Success
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Failed]
-                })).to eq ['C']
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Failed]
+                       })).to eq ['C']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Failed],
-                  'B' => [Station::Status::Success]
-                })).to eq ['C']
+                         'A' => [Station::Status::Failed],
+                         'B' => [Station::Status::Success]
+                       })).to eq ['C']
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Failed],
-                  'C' => [Station::Status::Success]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Failed],
+                         'C' => [Station::Status::Success]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Failed],
-                   'C' => [Station::Status::Success]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Failed],
+                          'C' => [Station::Status::Success]
+                        })).to eq Station::Status::Failed
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Failed],
-                   'C' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Failed],
+                          'C' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
     end
 
     it 'only triggers when all parallel steps are successful' do
@@ -427,37 +427,37 @@ describe Station::Planner do
       expect(plan.next).to eq %w[A B]
       expect(plan.next(current: { 'A' => [Station::Status::Success] })).to eq ['B']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success]
-                })).to eq ['C']
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success]
+                       })).to eq ['C']
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success]
-                 })).to eq Station::Status::Running
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success]
+                        })).to eq Station::Status::Running
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success],
-                  'C' => [Station::Status::Success]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success],
+                         'C' => [Station::Status::Success]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success],
-                   'C' => [Station::Status::Success]
-                 })).to eq Station::Status::Success
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success],
+                          'C' => [Station::Status::Success]
+                        })).to eq Station::Status::Success
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success],
-                  'C' => [Station::Status::Failed]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success],
+                         'C' => [Station::Status::Failed]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success],
-                   'C' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success],
+                          'C' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
     end
   end
 
@@ -476,17 +476,17 @@ describe Station::Planner do
       expect(plan.next(current: { 'A' => [Station::Status::Success] })).to eq ['B']
       expect(plan.next(current: { 'A' => [Station::Status::Failed] })).to eq ['B']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Failed],
-                  'B' => [Station::Status::Failed]
-                })).to eq []
+                         'A' => [Station::Status::Failed],
+                         'B' => [Station::Status::Failed]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Failed],
-                   'B' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Failed],
+                          'B' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
     end
 
     it 'always runs no matter the state for parallel' do
@@ -503,17 +503,17 @@ describe Station::Planner do
       expect(plan.next(current: { 'A' => [Station::Status::Success] })).to eq ['B']
       expect(plan.next(current: { 'A' => [Station::Status::Failed] })).to eq ['B']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Failed],
-                  'B' => [Station::Status::Failed]
-                })).to eq []
+                         'A' => [Station::Status::Failed],
+                         'B' => [Station::Status::Failed]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Failed],
-                   'B' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Failed],
+                          'B' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
     end
   end
 
@@ -528,14 +528,14 @@ describe Station::Planner do
 
       expect(plan.next(current: { 'A' => [Station::Status::Success] })).to eq ['B']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success]
-                })).to eq ['D']
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success]
+                       })).to eq ['D']
       expect(plan.next(current: { 'A' => [Station::Status::Failed] })).to eq ['C']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Failed],
-                  'C' => [Station::Status::Success]
-                })).to eq ['D']
+                         'A' => [Station::Status::Failed],
+                         'C' => [Station::Status::Success]
+                       })).to eq ['D']
     end
 
     it 'recommends success/failure before finally in parallel' do
@@ -548,14 +548,14 @@ describe Station::Planner do
 
       expect(plan.next(current: { 'A' => [Station::Status::Success] })).to eq ['B']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success]
-                })).to eq ['D']
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success]
+                       })).to eq ['D']
       expect(plan.next(current: { 'A' => [Station::Status::Failed] })).to eq ['C']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Failed],
-                  'C' => [Station::Status::Success]
-                })).to eq ['D']
+                         'A' => [Station::Status::Failed],
+                         'C' => [Station::Status::Success]
+                       })).to eq ['D']
     end
   end
 
@@ -572,25 +572,25 @@ describe Station::Planner do
       expect(plan.next(current: { 'A' => [Station::Status::Failed] })).to eq ['B']
       expect(plan.state(current: { 'A' => [Station::Status::Failed] })).to eq Station::Status::Running
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Failed]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Failed]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success]
+                       })).to eq []
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Success]
-                 })).to eq Station::Status::Success
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Success]
+                        })).to eq Station::Status::Success
       expect(plan.state(current: {
-                   'A' => [Station::Status::Failed],
-                   'B' => [Station::Status::Success]
-                 })).to eq Station::Status::Success
+                          'A' => [Station::Status::Failed],
+                          'B' => [Station::Status::Success]
+                        })).to eq Station::Status::Success
     end
 
     it 'works with parallel' do
@@ -601,13 +601,13 @@ describe Station::Planner do
 
       expect(plan.next).to eq %w[A B]
       expect(plan.state(current: {
-                   'A' => [Station::Status::Success],
-                   'B' => [Station::Status::Failed]
-                 })).to eq Station::Status::Success
+                          'A' => [Station::Status::Success],
+                          'B' => [Station::Status::Failed]
+                        })).to eq Station::Status::Success
       expect(plan.state(current: {
-                   'A' => [Station::Status::Failed],
-                   'B' => [Station::Status::Failed]
-                 })).to eq Station::Status::Failed
+                          'A' => [Station::Status::Failed],
+                          'B' => [Station::Status::Failed]
+                        })).to eq Station::Status::Failed
     end
   end
 
@@ -623,29 +623,29 @@ describe Station::Planner do
       expect(plan.next(current: { 'A' => [Station::Status::Success] })).to eq ['B']
       expect(plan.next(current: { 'A' => [Station::Status::Failed] })).to eq ['B']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Failed]
-                })).to eq %w[A B]
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Failed]
+                       })).to eq %w[A B]
       expect(plan.next(current: {
-                  'A' => [Station::Status::Failed],
-                  'B' => [Station::Status::Success]
-                })).to eq %w[A B]
+                         'A' => [Station::Status::Failed],
+                         'B' => [Station::Status::Success]
+                       })).to eq %w[A B]
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success, Station::Status::Failed],
-                  'B' => [Station::Status::Failed]
-                })).to eq ['B']
+                         'A' => [Station::Status::Success, Station::Status::Failed],
+                         'B' => [Station::Status::Failed]
+                       })).to eq ['B']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success, Station::Status::Success],
-                  'B' => [Station::Status::Failed]
-                })).to eq ['B']
+                         'A' => [Station::Status::Success, Station::Status::Success],
+                         'B' => [Station::Status::Failed]
+                       })).to eq ['B']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success, Station::Status::Success],
-                  'B' => [Station::Status::Failed, Station::Status::Failed]
-                })).to eq ['C']
+                         'A' => [Station::Status::Success, Station::Status::Success],
+                         'B' => [Station::Status::Failed, Station::Status::Failed]
+                       })).to eq ['C']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success, Station::Status::Success],
-                  'B' => [Station::Status::Failed, Station::Status::Success]
-                })).to eq []
+                         'A' => [Station::Status::Success, Station::Status::Success],
+                         'B' => [Station::Status::Failed, Station::Status::Success]
+                       })).to eq []
     end
 
     it 'only reruns the tasks for serial' do
@@ -659,25 +659,25 @@ describe Station::Planner do
       expect(plan.next(current: { 'A' => [Station::Status::Success] })).to eq ['B']
       expect(plan.next(current: { 'A' => [Station::Status::Failed] })).to eq ['A']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Failed]
-                })).to eq ['A']
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Failed]
+                       })).to eq ['A']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success],
-                  'B' => [Station::Status::Success]
-                })).to eq []
+                         'A' => [Station::Status::Success],
+                         'B' => [Station::Status::Success]
+                       })).to eq []
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success, Station::Status::Failed],
-                  'B' => [Station::Status::Failed]
-                })).to eq ['C']
+                         'A' => [Station::Status::Success, Station::Status::Failed],
+                         'B' => [Station::Status::Failed]
+                       })).to eq ['C']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success, Station::Status::Success],
-                  'B' => [Station::Status::Failed, Station::Status::Failed]
-                })).to eq ['C']
+                         'A' => [Station::Status::Success, Station::Status::Success],
+                         'B' => [Station::Status::Failed, Station::Status::Failed]
+                       })).to eq ['C']
       expect(plan.next(current: {
-                  'A' => [Station::Status::Success, Station::Status::Success],
-                  'B' => [Station::Status::Failed, Station::Status::Success]
-                })).to eq []
+                         'A' => [Station::Status::Success, Station::Status::Success],
+                         'B' => [Station::Status::Failed, Station::Status::Success]
+                       })).to eq []
     end
   end
 end

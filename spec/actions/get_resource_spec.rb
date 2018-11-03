@@ -39,5 +39,8 @@ describe Station::Actions::GetResource do
     expect(contents.chomp).to eq 'param'
     contents = File.read(File.join(get.destination_dir, 'source'))
     expect(contents.chomp).to eq 'source'
+
+    expect(JSON.parse(get.stdout.to_s)).to eq({"metadata"=>nil, "version"=>{"version"=>"abcd123"}})
+    expect(get.stderr.to_s).to include 'fetching version: abcd123'
   end
 end

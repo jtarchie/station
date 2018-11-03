@@ -8,17 +8,25 @@ describe Station::Actions::GetResource do
     Station::Resource.new(
       name: 'mock',
       type: 'mock',
-      source: {}
+      source: {
+        'create_files' => {
+          'source' => 'source'
+        }
+      }
     )
   end
   # don't use Dir.mktmpdir as it cannot be volume mounted into `docker run`
   let(:base_dir) { File.expand_path(File.join('..', '..', 'tmp')) }
 
-  it 'uses a destination directory' do
+  it 'uses all the values' do
     get = described_class.new(
       resource: resource,
       destination_dir: File.join(base_dir, SecureRandom.hex),
-      params: {}
+      params: {
+        'create_files_via_params' => {
+          'param' => 'param'
+        }
+      }
     )
     get.perform!(
       version: {
@@ -27,12 +35,9 @@ describe Station::Actions::GetResource do
     )
     contents = File.read(File.join(get.destination_dir, 'version'))
     expect(contents.chomp).to eq 'abcd123'
-  end
-
-  it 'uses the params' do
-  end
-  it 'uses the version provided' do
-  end
-  it 'uses source' do
+    contents = File.read(File.join(get.destination_dir, 'param'))
+    expect(contents.chomp).to eq 'param'
+    contents = File.read(File.join(get.destination_dir, 'source'))
+    expect(contents.chomp).to eq 'source'
   end
 end

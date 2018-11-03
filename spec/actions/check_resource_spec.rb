@@ -8,30 +8,34 @@ describe Station::Actions::CheckResource do
   context 'when given a brand new resource' do
     it 'returns the most recent version' do
       resource = Station::Resource.new(
-        name: '1ms',
-        type: 'time',
-        source: { 'interval' => '1ms' }
+        name: 'mock',
+        type: 'mock',
+        source: {}
       )
       checker = described_class.new(resource: resource)
       checker.perform!
-      expect(checker.versions.size).to eq 1
+      expect(checker.versions).to eq([
+                                       { 'version' => '', 'privileged' => 'true' }
+                                     ])
     end
   end
 
   context 'when given a previous version' do
     it 'returns all the inbetween versions' do
       resource = Station::Resource.new(
-        name: '1ms',
-        type: 'time',
-        source: { 'interval' => '1ms' }
+        name: 'mock',
+        type: 'mock',
+        source: {}
       )
       checker = described_class.new(resource: resource)
       checker.perform!(
         version: {
-          'time' => Time.now.utc.xmlschema
+          'version' => 'some-version'
         }
       )
-      expect(checker.versions.size).to be > 1
+      expect(checker.versions).to eq [
+        { 'version' => 'some-version', 'privileged' => 'true' }
+      ]
     end
   end
 end

@@ -6,9 +6,9 @@ require 'securerandom'
 describe Station::Actions::GetResource do
   let(:resource) do
     Station::Resource.new(
-      name: 'echo',
-      type: 'echo',
-      source: { 'key' => 'value' }
+      name: 'mock',
+      type: 'mock',
+      source: {}
     )
   end
   # don't use Dir.mktmpdir as it cannot be volume mounted into `docker run`
@@ -22,11 +22,11 @@ describe Station::Actions::GetResource do
     )
     get.perform!(
       version: {
-        'ref' => 'abcd123'
+        'version' => 'abcd123'
       }
     )
     contents = File.read(File.join(get.destination_dir, 'version'))
-    expect(contents.chomp).to eq '{ "ref": "abcd123" }'.chomp
+    expect(contents.chomp).to eq 'abcd123'
   end
 
   it 'uses the params' do

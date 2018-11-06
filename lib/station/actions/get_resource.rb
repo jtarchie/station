@@ -7,31 +7,28 @@ require 'tmpdir'
 module Station
   module Actions
     class GetResource
-      attr_reader :destination_dir
       attr_reader :stdout
       attr_reader :stderr
 
       def initialize(
           resource: Resource,
           params: Hash,
-          destination_dir: Dir.mktmpdir,
           resource_types: ResourceTypes.new,
           stdout: StringIO.new,
           stderr: StringIO.new
         )
         @resource = resource
         @params = params
-        @destination_dir = destination_dir
         @resource_types = resource_types
         @stdout = stdout
         @stderr = stderr
       end
 
-      def perform!(version: {})
+      def perform!(version: {}, destination_dir: )
         @stdout, @stderr, = Open3.capture3(
           ['docker',
            'run', '-i', '--rm',
-           '-v', "#{@destination_dir}:/tmp/build/get",
+           '-v', "#{destination_dir}:/tmp/build/get",
            '-w', '/tmp/build/get',
            '--privileged=false',
            @resource_types.repository(name: @resource.type),
@@ -42,6 +39,10 @@ module Station
             params: @params
           }.to_json)
         )
+      end
+
+      def payload
+        JSON.parse(@stdout.to_s)
       end
     end
   end

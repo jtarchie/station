@@ -19,9 +19,9 @@ describe Station::Actions::GetResource do
   let(:base_dir) { File.expand_path(File.join('..', '..', 'tmp')) }
 
   it 'uses all the values' do
+    destination_dir = File.join(base_dir, SecureRandom.hex)
     get = described_class.new(
       resource: resource,
-      destination_dir: File.join(base_dir, SecureRandom.hex),
       params: {
         'create_files_via_params' => {
           'param' => 'param'
@@ -31,16 +31,17 @@ describe Station::Actions::GetResource do
     get.perform!(
       version: {
         'version' => 'abcd123'
-      }
+      },
+      destination_dir: destination_dir,
     )
-    contents = File.read(File.join(get.destination_dir, 'version'))
+    contents = File.read(File.join(destination_dir, 'version'))
     expect(contents.chomp).to eq 'abcd123'
-    contents = File.read(File.join(get.destination_dir, 'param'))
+    contents = File.read(File.join(destination_dir, 'param'))
     expect(contents.chomp).to eq 'param'
-    contents = File.read(File.join(get.destination_dir, 'source'))
+    contents = File.read(File.join(destination_dir, 'source'))
     expect(contents.chomp).to eq 'source'
 
-    expect(JSON.parse(get.stdout.to_s)).to eq('metadata' => nil, 'version' => { 'version' => 'abcd123' })
+    expect(get.payload).to eq('metadata' => nil, 'version' => { 'version' => 'abcd123' })
     expect(get.stderr.to_s).to include 'fetching version: abcd123'
   end
 end

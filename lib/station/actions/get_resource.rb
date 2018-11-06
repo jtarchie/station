@@ -3,6 +3,7 @@
 require 'open3'
 require 'shellwords'
 require 'tmpdir'
+require 'json'
 
 module Station
   module Actions

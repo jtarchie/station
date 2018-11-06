@@ -7,6 +7,8 @@ require 'shellwords'
 module Station
   module Actions
     class CheckResource
+      attr_reader :resource
+
       def initialize(
         resource: Resource,
         resource_types: ResourceTypes.new,
@@ -20,19 +22,35 @@ module Station
       end
 
       def perform!(version: {})
-        @stdout, @stderr, = Open3.capture3(
+        Open3.popen3(
           ['docker',
            'run', '-i', '--rm',
            '--privileged=false',
            @resource_types.repository(name: @resource.type),
-           '/opt/resource/check'].shelljoin,
-          stdin_data: StringIO.new({ source: @resource.source, version: version }.to_json)
-        )
+           '/opt/resource/check'].shelljoin
+        ) do |stdin, stdout, stderr, wait_thr|
+          stdin.write({ source: @resource.source, version: version }.to_json)
+          stdin.close
+          readers = [stdout, stderr]
+
+          while !!wait_thr.status
+            next if readers.length == 0
+            reader = IO.select(readers)[0][0]
+            begin
+              output = reader.read_nonblock(1024)
+              print output if ENV['DEBUG']
+              @stdout.write output if reader == stdout
+              @stderr.write output if reader == stderr
+            rescue EOFError
+              readers.delete(reader)
+            end
+          end
+        end
       end
 
       def versions
         if @stdout
-          JSON.parse(@stdout.to_s).map do |version|
+          JSON.parse(@stdout.string).map do |version|
             version.map { |k, v| [k, v.to_s] }.to_h
           end
         else

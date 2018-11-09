@@ -32,7 +32,7 @@ describe Station::Actions::GetResource do
       version: {
         'version' => 'abcd123'
       },
-      destination_dir: destination_dir,
+      destination_dir: destination_dir
     )
     contents = File.read(File.join(destination_dir, 'version'))
     expect(contents.chomp).to eq 'abcd123'
@@ -42,6 +42,6 @@ describe Station::Actions::GetResource do
     expect(contents.chomp).to eq 'source'
 
     expect(get.payload).to eq('metadata' => nil, 'version' => { 'version' => 'abcd123' })
-    expect(get.stderr.to_s).to include 'fetching version: abcd123'
+    expect(get.stderr.string).to include 'fetching version: abcd123'
   end
 end

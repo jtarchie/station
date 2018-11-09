@@ -34,7 +34,8 @@ module Station
           readers = [stdout, stderr]
 
           while !!wait_thr.status
-            next if readers.length == 0
+            next if readers.empty?
+
             reader = IO.select(readers)[0][0]
             begin
               output = reader.read_nonblock(1024)

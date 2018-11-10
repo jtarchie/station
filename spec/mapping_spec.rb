@@ -67,6 +67,24 @@ RSpec.describe 'when creating a mapping' do
         end.to raise_error(Station::Mapping::RequiredType)
       end
     end
+
+    context 'when the type is specified as Boolean' do
+      it 'handles true or false' do
+        klass = Class.new(Station::Mapping) do
+          property :surprise, boolean
+        end
+
+        obj = klass.new(surprise: true)
+        expect(obj.surprise).to be_truthy
+
+        obj = klass.new(surprise: false)
+        expect(obj.surprise).to be_falsey
+
+        expect do
+          obj = klass.new(surprise: 'testing')
+        end.to raise_error(Station::Mapping::RequiredType)
+      end
+    end
   end
 
   context 'collections' do

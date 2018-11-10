@@ -5,13 +5,21 @@ module Station
     class Resource < Mapping
       property :name, String, required: true
       property :type, String, required: true
-      property :source, Hash, default: -> { {} }
+      property :source, Hash(String, String), default: -> { {} }
+      property :version, Hash(String, String), default: -> { {} }
+      property :check_every, String, default: -> { '1m' }
+      property :tags, Array(String), default: -> { [] }
+      property :webhook_token, String
     end
 
     class ResourceTypes < Mapping
       property :name, String, required: true
       property :type, String, required: true
-      property :source, Hash, default: -> { {} }
+      property :source, Hash(String, String), default: -> { {} }
+      property :privileged, boolean, default: -> { false }
+      property :params, Hash(String, String), default: -> { {} }
+      property :check_every, String, default: -> { '1m' }
+      property :tags, Array(String), default: -> { [] }
     end
 
     class Jobs < Mapping

@@ -20,12 +20,22 @@ module Station
       end
     end
 
+    CustomBooleanType = Class.new do
+      def ===(rhs)
+        TrueClass === rhs || FalseClass === rhs
+      end
+    end
+
     def self.Hash(key, value)
       CustomHashType.new(key: key, value: value)
     end
 
     def self.Array(value)
       CustomArrayType.new(value: value)
+    end
+
+    def self.boolean
+      CustomBooleanType.new
     end
 
     Expectation = Struct.new(:type, :required, :default, keyword_init: true) do

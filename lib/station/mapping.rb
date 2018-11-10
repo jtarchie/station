@@ -5,18 +5,40 @@ module Station
     RequiredValue = Class.new(RuntimeError)
     RequiredType = Class.new(RuntimeError)
     UnknownProperty = Class.new(RuntimeError)
+    CustomHashType = Struct.new(:key, :value, keyword_init: true) do
+      def ===(rhs)
+        rhs.is_a?(Hash) &&
+          rhs.keys.all? { |k| key === k } &&
+          rhs.values.all? { |v| value === v }
+      end
+    end
+
+    CustomArrayType = Struct.new(:value, keyword_init: true) do
+      def ===(rhs)
+        rhs.is_a?(Array) &&
+          rhs.all? { |v| value === v }
+      end
+    end
+
+    def self.Hash(key, value)
+      CustomHashType.new(key: key, value: value)
+    end
+
+    def self.Array(value)
+      CustomArrayType.new(value: value)
+    end
 
     Expectation = Struct.new(:type, :required, :default, keyword_init: true) do
       def matches?(value)
-        value.is_a?(type)
+        type === value
       end
     end
 
     CollectionExpectation = Struct.new(:type, :required, :default, keyword_init: true) do
       def matches?(value)
-        return false unless value.is_a?(Array)
+        return false unless Array === value
 
-        value.all? { |v| v.is_a?(Hash) }
+        value.all? { |v| Hash === v }
       end
 
       def value(value)
@@ -64,9 +86,11 @@ module Station
       options.each do |name, value|
         if expect = properties[name.to_s]
           raise RequiredType unless expect.matches?(value)
+
           @values[name.to_s] = value
         elsif expect = collections[name.to_s]
           raise RequiredType unless expect.matches?(value)
+
           @values[name.to_s] = expect.value(value)
         else
           raise UnknownProperty

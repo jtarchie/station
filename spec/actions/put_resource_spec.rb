@@ -24,13 +24,13 @@ describe Station::Actions::PutResource do
       mounts_dir: File.join(base_dir, 'mounts'),
       params: {}
     )
-    put.perform!(
+    result = put.perform!(
       version: {
         'version' => 'abcd123'
       }
     )
 
-    expect(put.payload).to eq ({ 'metadata' => [{ 'name' => 'key', 'value' => 'value' }], 'version' => { 'privileged' => 'true', 'version' => '' } })
-    expect(put.stderr.string).to include 'pushing version'
+    expect(result.payload).to eq ({ 'metadata' => [{ 'name' => 'key', 'value' => 'value' }], 'version' => { 'privileged' => 'true', 'version' => '' } })
+    expect(result.stderr).to include 'pushing version'
   end
 end

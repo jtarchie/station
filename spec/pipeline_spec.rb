@@ -42,4 +42,27 @@ RSpec.describe 'When parsing a pipeline' do
     expect(type.check_every).to eq '1m'
     expect(type.tags).to eq []
   end
+
+  context 'with jobs' do
+    it 'understand a job' do
+      payload = {
+          'jobs' => [
+              {'name' => 'testing', 'plan' => [] }
+          ]
+      }.to_yaml
+      pipeline = Station::Pipeline.from_yaml(payload)
+      expect(pipeline.jobs.size).to eq 1
+
+      job = pipeline.jobs.first
+      expect(job.name).to eq 'testing'
+      expect(job.plan).to eq []
+      expect(job.serial).to be_falsey
+      expect(job.build_logs_to_retain).to be_nil
+      expect(job.serial_groups).to eq []
+      expect(job.max_in_flight).to be_nil
+      expect(job.public).to be_falsey
+      expect(job.disable_manual_trigger).to be_falsey
+      expect(job.interruptible).to be_falsey
+    end
+  end
 end

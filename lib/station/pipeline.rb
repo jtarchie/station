@@ -23,11 +23,18 @@ module Station
     end
 
     class Jobs < Mapping
-      class Plan < Mapping
+      class Step < Mapping
       end
 
       property :name, String, required: true
-      property :plan, Plan, default: -> { [] }
+      property :plan, Array(Step), required: true
+      property :serial, boolean, default: -> { false }
+      property :build_logs_to_retain, Integer
+      property :serial_groups, Array(String), default: -> { [] }
+      property :max_in_flight, Integer
+      property :public, boolean, default: -> { false }
+      property :disable_manual_trigger, boolean, default: -> { false }
+      property :interruptible, boolean, default: -> { false }
     end
 
     collection :resources, Pipeline::Resource

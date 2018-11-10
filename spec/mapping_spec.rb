@@ -163,4 +163,37 @@ RSpec.describe 'when creating a mapping' do
       obj = klass.new(people: 123)
     end.to raise_error(Station::Mapping::UnknownProperty)
   end
+
+  context 'when handling a union of mappings' do
+    it 'parses to the appropriate mapping' do
+      klass = Class.new(Station::Mapping) do
+        class Tree < Station::Mapping
+          property :leaves, Integer
+        end
+
+        class Flower < Station::Mapping
+          property :flowers, Integer
+        end
+
+        Plant = Union(Tree, Flower)
+
+        property :plant, Plant
+        collection :plants, Plant
+      end
+
+      obj = klass.new(plant: {leaves: 1})
+      expect(obj.plant.leaves).to eq 1
+      expect(obj.plant).to be_instance_of(Tree)
+
+      obj = klass.new(plant: {flowers: 1})
+      expect(obj.plant.flowers).to eq 1
+      expect(obj.plant).to be_instance_of(Flower)
+
+      obj = klass.new(plants: [{leaves: 1}, {flowers: 2}])
+      expect(obj.plants[0]).to be_instance_of(Tree)
+      expect(obj.plants[0].leaves).to eq 1
+      expect(obj.plants[1]).to be_instance_of(Flower)
+      expect(obj.plants[1].flowers).to eq 2
+    end
+  end
 end

@@ -2,9 +2,18 @@
 
 module Station
   class Mapping
-    RequiredValue = Class.new(RuntimeError)
-    RequiredType = Class.new(RuntimeError)
-    UnknownProperty = Class.new(RuntimeError)
+    class RequiredValue < StandardError
+      def initialize(name)
+        super("'#{name}' is a required value")
+      end
+    end
+    class RequiredType < StandardError
+      def initialize(name, value, type)
+        super("'#{name}' is of type '#{value.class}', but needs to be of type '#{type}'")
+      end
+    end
+    UnknownProperty = Class.new(StandardError)
+
     CustomHashType = Struct.new(:key, :value, keyword_init: true) do
       def ===(rhs)
         rhs.is_a?(Hash) &&
@@ -26,12 +35,34 @@ module Station
       end
     end
 
+    CustomUnionType = Struct.new(:types, keyword_init: true) do
+      def ===(rhs)
+        types.any? { |t| t === rhs }
+      end
+
+      def new(value)
+        types.lazy.map do |type|
+          begin
+            type.new(value)
+          rescue UnknownProperty
+            nil
+          end
+        end.find do |v|
+          v != nil
+        end
+      end
+    end
+
     def self.Hash(key, value)
       CustomHashType.new(key: key, value: value)
     end
 
     def self.Array(value)
       CustomArrayType.new(value: value)
+    end
+
+    def self.Union(*types)
+      CustomUnionType.new(types: types)
     end
 
     def self.boolean
@@ -41,6 +72,12 @@ module Station
     Expectation = Struct.new(:type, :required, :default, keyword_init: true) do
       def matches?(value)
         type === value
+      end
+
+      def value(value)
+        return value unless type.respond_to?(:new)
+
+        type.new(value)
       end
     end
 
@@ -95,11 +132,11 @@ module Station
 
       options.each do |name, value|
         if expect = properties[name.to_s]
-          raise RequiredType unless expect.matches?(value)
+          raise RequiredType.new(name, value, expect.type) unless expect.matches?(value)
 
-          @values[name.to_s] = value
+          @values[name.to_s] = expect.value(value)
         elsif expect = collections[name.to_s]
-          raise RequiredType unless expect.matches?(value)
+          raise RequiredType.new(name, value, expect.type) unless expect.matches?(value)
 
           @values[name.to_s] = expect.value(value)
         else
@@ -108,11 +145,16 @@ module Station
       end
 
       properties.each do |name, expect|
-        raise RequiredValue if expect.required && !@values.key?(name)
+        raise RequiredValue.new(name) if expect.required && !@values.key?(name)
       end
       collections.each do |name, expect|
-        raise RequiredValue if expect.required && !@values.key?(name)
+        raise RequiredValue.new(name) if expect.required && !@values.key?(name)
       end
+    end
+
+    def self.===(rhs)
+      keys = collections.keys + properties.keys
+      (keys - rhs.keys).length > 0
     end
   end
 end

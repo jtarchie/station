@@ -28,20 +28,41 @@ module Station
       end
 
       def perform!(version: {})
-        @stdout, @stderr, = Open3.capture3(
+        Open3.popen3(
           ['docker',
            'run', '-i', '--rm',
            '-v', "#{mounts_dir}:/tmp/build/put",
            '-w', '/tmp/build/put',
            '--privileged=false',
            @resource_types.repository(name: @resource.type),
-           '/opt/resource/out', '/tmp/build/put'].shelljoin,
-          stdin_data: StringIO.new({
-            source: @resource.source,
-            version: version,
-            params: @params
+           '/opt/resource/out', '/tmp/build/put'].shelljoin
+        ) do |stdin, stdout, stderr, wait_thr|
+          stdin.write({
+              source: @resource.source,
+              version: version,
+              params: @params
           }.to_json)
-        )
+          stdin.close
+          readers = [stdout, stderr]
+
+          while !!wait_thr.status
+            next if readers.empty?
+
+            reader = IO.select(readers)[0][0]
+            begin
+              output = reader.read_nonblock(1024)
+              print output if ENV['DEBUG']
+              @stdout.write output if reader == stdout
+              @stderr.write output if reader == stderr
+            rescue EOFError
+              readers.delete(reader)
+            end
+          end
+        end
+      end
+
+      def payload
+        JSON.parse(@stdout.string)
       end
     end
   end

@@ -30,7 +30,7 @@ describe Station::Actions::PutResource do
       }
     )
 
-    expect(JSON.parse(put.stdout.to_s)).to eq ({ 'metadata' => [{ 'name' => 'key', 'value' => 'value' }], 'version' => { 'privileged' => 'true', 'version' => '' } })
-    expect(put.stderr.to_s).to include 'pushing version'
+    expect(put.payload).to eq ({ 'metadata' => [{ 'name' => 'key', 'value' => 'value' }], 'version' => { 'privileged' => 'true', 'version' => '' } })
+    expect(put.stderr.string).to include 'pushing version'
   end
 end

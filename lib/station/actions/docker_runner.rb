@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'shellwords'
 require 'open3'
@@ -15,7 +17,7 @@ module Station
           command:,
           stdout: StringIO.new,
           stderr: StringIO.new
-      )
+        )
         @volumes = volumes
         @working_dir = working_dir
         @image = image
@@ -31,8 +33,6 @@ module Station
       def stderr
         @stderr.string
       end
-
-
 
       def execute!(payload:)
         args = ['docker', 'run', '-i', '--rm', '--privileged=false']

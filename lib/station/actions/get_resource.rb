@@ -20,19 +20,19 @@ module Station
 
       def perform!(version: {}, destination_dir:)
         runner = DockerRunner.new(
-                                 volumes: [ Volume.new(destination_dir, '/tmp/build/get')],
-                                 working_dir: '/tmp/build/get',
-                                 image: @resource_types.repository(name: @resource.type),
-                                 command: ['/opt/resource/in', '/tmp/build/get']
+          volumes: [Volume.new(destination_dir, '/tmp/build/get')],
+          working_dir: '/tmp/build/get',
+          image: @resource_types.repository(name: @resource.type),
+          command: ['/opt/resource/in', '/tmp/build/get']
         )
         runner.execute!(payload: {
-            source: @resource.source,
-            version: version,
-            params: @params
-        })
+                          source: @resource.source,
+                          version: version,
+                          params: @params
+                        })
         Result.new(
-                  payload: JSON.parse(runner.stdout),
-                  stderr: runner.stderr
+          payload: JSON.parse(runner.stdout),
+          stderr: runner.stderr
         )
       end
     end

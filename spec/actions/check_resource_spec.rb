@@ -15,8 +15,8 @@ describe Station::Actions::CheckResource do
       checker = described_class.new(resource: resource)
       result = checker.perform!
       expect(result.payload).to eq([
-                                       { 'version' => '', 'privileged' => 'true' }
-                                     ])
+                                     { 'version' => '', 'privileged' => 'true' }
+                                   ])
     end
   end
 

@@ -18,18 +18,18 @@ module Station
 
       def perform!(version: {})
         runner = DockerRunner.new(
-                                 volumes: [],
-                                 working_dir: '/tmp/build/12345',
-                                 image: @resource_types.repository(name: @resource.type),
-                                 command: ['/opt/resource/check']
+          volumes: [],
+          working_dir: '/tmp/build/12345',
+          image: @resource_types.repository(name: @resource.type),
+          command: ['/opt/resource/check']
         )
         runner.execute!(payload: {
-            source: @resource.source,
-            version: version
-        })
+                          source: @resource.source,
+                          version: version
+                        })
         Result.new(
-            payload: JSON.parse(runner.stdout),
-            stderr: runner.stderr
+          payload: JSON.parse(runner.stdout),
+          stderr: runner.stderr
         )
       end
     end

@@ -41,6 +41,7 @@ module Station
         args += [@image]
         args += @command
         Open3.popen3(args.shelljoin) do |stdin, stdout, stderr, wait_thr|
+          puts "stdin: #{payload.to_json}" if ENV['DEBUG']
           stdin.write(payload.to_json)
           stdin.close
 

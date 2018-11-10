@@ -17,7 +17,7 @@ module Station
       end
 
       def perform!(version: {})
-        runner = DockerRunner.new(
+        runner = Runner::Docker.new(
           volumes: [],
           working_dir: '/tmp/build/12345',
           image: @resource_types.repository(name: @resource.type),

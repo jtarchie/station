@@ -23,8 +23,8 @@ module Station
       end
 
       def perform!(version: {})
-        runner = DockerRunner.new(
-          volumes: [Volume.new(mounts_dir, '/tmp/build/put')],
+        runner = Runner::Docker.new(
+          volumes: [Runner::Volume.new(mounts_dir, '/tmp/build/put')],
           working_dir: '/tmp/build/put',
           image: @resource_types.repository(name: @resource.type),
           command: ['/opt/resource/out', '/tmp/build/put']

@@ -6,10 +6,8 @@ require 'open3'
 require 'json'
 
 module Station
-  module Actions
-    Volume = Struct.new(:from, :to)
-
-    class DockerRunner
+  module Runner
+    class Docker
       def initialize(
           volumes:,
           working_dir:,

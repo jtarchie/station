@@ -19,8 +19,8 @@ module Station
       end
 
       def perform!(version: {}, destination_dir:)
-        runner = DockerRunner.new(
-          volumes: [Volume.new(destination_dir, '/tmp/build/get')],
+        runner = Runner::Docker.new(
+          volumes: [Runner::Volume.new(destination_dir, '/tmp/build/get')],
           working_dir: '/tmp/build/get',
           image: @resource_types.repository(name: @resource.type),
           command: ['/opt/resource/in', '/tmp/build/get']

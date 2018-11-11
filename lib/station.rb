@@ -12,7 +12,6 @@ module Station
 end
 
 require_relative 'station/actions'
-require_relative 'station/resource'
 require_relative 'station/resource_types'
 require_relative 'station/planner'
 require_relative 'station/runner'

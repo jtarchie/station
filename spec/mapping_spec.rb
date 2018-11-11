@@ -51,6 +51,18 @@ RSpec.describe 'when creating a mapping' do
           obj = klass.new(source: { 123 => 123 })
         end.to raise_error(Station::Mapping::RequiredType)
       end
+
+      it 'handles any reference to Hash' do
+        klass = Class.new(Station::Mapping) do
+          property :source, Hash
+        end
+
+        obj = klass.new(source: { 'name' => 'value' })
+        expect(obj.source).to eq('name' => 'value')
+
+        obj = klass.new(source: { 123 => 123 })
+        expect(obj.source).to eq(123 => 123)
+      end
     end
 
     context 'when type is specified as Array' do

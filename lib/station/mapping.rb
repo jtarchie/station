@@ -83,8 +83,8 @@ module Station
       end
 
       def value(value)
+        return value if Hash == type
         return value unless type.respond_to?(:new)
-
         type.new(value)
       end
     end

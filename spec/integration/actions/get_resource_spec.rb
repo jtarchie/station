@@ -5,7 +5,7 @@ require 'securerandom'
 
 describe Station::Actions::GetResource do
   let(:resource) do
-    Station::Resource.new(
+    Station::Pipeline::Resource.new(
       name: 'mock',
       type: 'mock',
       source: {

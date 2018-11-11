@@ -5,7 +5,7 @@ module Station
     class Resource < Mapping
       property :name, String, required: true
       property :type, String, required: true
-      property :source, Hash(String, String), default: -> { {} }
+      property :source, Hash, default: -> { {} }
       property :version, Hash(String, String), default: -> { {} }
       property :check_every, String, default: -> { '1m' }
       property :tags, Array(String), default: -> { [] }

@@ -7,7 +7,7 @@ require 'time'
 describe Station::Actions::CheckResource do
   context 'when given a brand new resource' do
     it 'returns the most recent version' do
-      resource = Station::Resource.new(
+      resource = Station::Pipeline::Resource.new(
         name: 'mock',
         type: 'mock',
         source: {}
@@ -22,7 +22,7 @@ describe Station::Actions::CheckResource do
 
   context 'when given a previous version' do
     it 'returns all the inbetween versions' do
-      resource = Station::Resource.new(
+      resource = Station::Pipeline::Resource.new(
         name: 'mock',
         type: 'mock',
         source: {}

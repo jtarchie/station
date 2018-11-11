@@ -17,7 +17,7 @@ module Station
     def add(name: String, type: String, source: Hash)
       @images[name] = Image.new(
         repository: source['repository'],
-        tag:        source.fetch('tag', 'latest')
+        tag: source.fetch('tag', 'latest')
       )
     end
   end

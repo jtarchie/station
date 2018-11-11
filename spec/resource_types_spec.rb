@@ -32,7 +32,7 @@ describe Station::ResourceTypes do
       type: 'docker-image',
       source: {
         'repository' => 'jtarchie/pr',
-        'tag'        => 'testing'
+        'tag' => 'testing'
       }
     )
     expect(types.repository(name: 'time')).to eq 'concourse/time-resource:latest'
@@ -47,7 +47,7 @@ describe Station::ResourceTypes do
       type: 'docker-image',
       source: {
         'repository' => 'jtarchie/time',
-        'tag'        => 'testing'
+        'tag' => 'testing'
       }
     )
     expect(types.repository(name: 'time')).to eq 'jtarchie/time:testing'

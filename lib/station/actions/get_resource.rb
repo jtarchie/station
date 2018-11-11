@@ -13,15 +13,17 @@ module Station
       def initialize(
           resource: Resource,
           params: {},
-          resource_types: ResourceTypes.new
+          resource_types: ResourceTypes.new,
+          runner_klass: Runner::Docker
         )
         @resource = resource
         @params = params
         @resource_types = resource_types
+        @runner_klass = runner_klass
       end
 
       def perform!(version: {}, destination_dir:)
-        runner = Runner::Docker.new(
+        runner = @runner_klass.new(
           volumes: [Runner::Volume.new(destination_dir, '/tmp/build/get')],
           working_dir: '/tmp/build/get',
           image: @resource_types.repository(name: @resource.type),

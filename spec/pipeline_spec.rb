@@ -69,7 +69,7 @@ RSpec.describe 'When parsing a pipeline' do
       payload = {
         'jobs' => [
           { 'name' => 'testing', 'plan' => [
-            { 'get' => 'resource-a' },
+            { 'get' => 'resource-a', 'attempts' => 1 },
             { 'put' => 'resource-b' },
             { 'task' => 'task-name', 'config' => { 'platform' => 'linux' } },
             { 'do' => [

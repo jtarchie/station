@@ -19,7 +19,7 @@ module Station
     end
 
     CustomHashType = Struct.new(:key, :value, keyword_init: true) do
-      def ===(rhs)
+      def matches?(rhs)
         rhs.is_a?(Hash) &&
           rhs.keys.all? { |k| key === k } &&
           rhs.values.all? { |v| value === v }
@@ -27,21 +27,23 @@ module Station
     end
 
     CustomArrayType = Struct.new(:value, keyword_init: true) do
-      def ===(rhs)
+      def matches?(rhs)
         rhs.is_a?(Array) &&
           rhs.all? { |v| value === v }
       end
     end
 
     CustomBooleanType = Class.new do
-      def ===(rhs)
+      def matches?(rhs)
         TrueClass === rhs || FalseClass === rhs
       end
     end
 
     CustomUnionType = Struct.new(:types, keyword_init: true) do
-      def ===(rhs)
-        types.any? { |t| t === rhs }
+      def matches?(rhs)
+        types.any? do |t|
+          (t.respond_to?(:matches?) && t.matches?(rhs)) || t === rhs
+        end
       end
 
       def new(value)
@@ -79,6 +81,8 @@ module Station
 
     Expectation = Struct.new(:type, :required, :default, keyword_init: true) do
       def matches?(value)
+        return type.matches?(value) if type.respond_to?(:matches?)
+
         type === value
       end
 
@@ -161,7 +165,7 @@ module Station
       end
     end
 
-    def self.===(rhs)
+    def self.matches?(rhs)
       keys = collections.keys + properties.keys
       leftovers = rhs.keys.map(&:to_s) - keys
       leftovers.empty?

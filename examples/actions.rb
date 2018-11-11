@@ -22,40 +22,32 @@ pipeline = Station::Pipeline.from_yaml(
   }.to_yaml
 )
 
-steps = pipeline.jobs.first.plan.map do |step|
-  case step
-  when Station::Pipeline::Jobs::Get
-    resource_name = step.get
-    resource = pipeline.resources.find { |r| r.name == resource_name }
-    [
-      Station::Actions::CheckResource.new(resource: resource),
-      Station::Actions::GetResource.new(resource: resource)
-    ]
-  end
-end
+builder = Station::Builder.new(pipeline: pipeline)
+plan    = builder.plans['testing']
 
 known_versions = Hash.new { |hash, key| hash[key] = [] }
 volumes = Hash.new { |hash, key| hash[key] = File.expand_path(File.join(__dir__, '..', 'tmp', SecureRandom.hex)) }
+results = Hash.new { |hash, key| hash[key] = [] }
 
-def process(steps, known_versions, volumes)
+while steps = plan.next(current: results)
+  break if steps.empty?
+
   steps.each do |step|
     case step
-    when Array
-      process(step, known_versions, volumes)
     when Station::Actions::CheckResource
       result = step.perform!
       known_versions[step.resource.name] += result.payload
+      results[step.to_s] = [Station::Status::Success]
     when Station::Actions::GetResource
       step.perform!(
-          version: known_versions[step.resource.name].last,
-          destination_dir: volumes[step.resource.name]
+        version: known_versions[step.resource.name].last,
+        destination_dir: volumes[step.resource.name]
       )
       system("ls -asl #{volumes[step.resource.name]}")
+      results[step.to_s] = [Station::Status::Success]
     end
   end
 end
-
-process(steps, known_versions, volumes)
 
 puts 'cleaning up'
 volumes.each do |_name, dir|

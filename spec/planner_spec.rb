@@ -91,7 +91,7 @@ describe Station::Planner do
   context 'a parallel plan with two steps' do
     it "returns the step for execution when it hasn't started yet" do
       plan = aggregate { task :A; task :B }
-      expect(plan.next).to eq([:A, :B])
+      expect(plan.next).to eq(%i[A B])
       expect(plan.state).to eq Station::Status::Unstarted
 
       state = { 'A' => [Station::Status::Success] }

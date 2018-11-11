@@ -81,7 +81,7 @@ module Station
       )
         return [] if current.key?(name) && current[name].size >= attempt
 
-        [self.ref]
+        [ref]
       end
 
       def state(

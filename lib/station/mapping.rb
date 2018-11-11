@@ -12,7 +12,11 @@ module Station
         super("'#{name}' is of type '#{value.class}', but needs to be of type '#{type}'")
       end
     end
-    UnknownProperty = Class.new(StandardError)
+    class UnknownProperty < StandardError
+      def initialize(name)
+        super("'#{name}' is an unknown property or collection")
+      end
+    end
 
     CustomHashType = Struct.new(:key, :value, keyword_init: true) do
       def ===(rhs)
@@ -41,15 +45,19 @@ module Station
       end
 
       def new(value)
-        types.lazy.map do |type|
-          begin
-            type.new(value)
-          rescue UnknownProperty
-            nil
-          end
-        end.find do |v|
-          v != nil
+        evals = types.lazy.map do |type|
+          type.new(value)
+        rescue UnknownProperty => e
+          e
         end
+        assert = evals.find do |v|
+          !(UnknownProperty === v)
+        end
+        return assert if assert
+
+        raise(evals.find do |v|
+          UnknownProperty === v
+        end)
       end
     end
 
@@ -140,21 +148,22 @@ module Station
 
           @values[name.to_s] = expect.value(value)
         else
-          raise UnknownProperty
+          raise UnknownProperty, name
         end
       end
 
       properties.each do |name, expect|
-        raise RequiredValue.new(name) if expect.required && !@values.key?(name)
+        raise RequiredValue, name if expect.required && !@values.key?(name)
       end
       collections.each do |name, expect|
-        raise RequiredValue.new(name) if expect.required && !@values.key?(name)
+        raise RequiredValue, name if expect.required && !@values.key?(name)
       end
     end
 
     def self.===(rhs)
       keys = collections.keys + properties.keys
-      (keys - rhs.keys).length > 0
+      leftovers = rhs.keys.map(&:to_s) - keys
+      leftovers.empty?
     end
   end
 end

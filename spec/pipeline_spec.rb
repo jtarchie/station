@@ -26,9 +26,9 @@ RSpec.describe 'When parsing a pipeline' do
 
   it 'understands resource types' do
     payload = {
-        'resource_types' => [
-            { 'name' => 'testing', 'type' => 'git' }
-        ]
+      'resource_types' => [
+        { 'name' => 'testing', 'type' => 'git' }
+      ]
     }.to_yaml
     pipeline = Station::Pipeline.from_yaml(payload)
     expect(pipeline.resource_types.size).to eq 1
@@ -44,11 +44,11 @@ RSpec.describe 'When parsing a pipeline' do
   end
 
   context 'with jobs' do
-    it 'understand a job' do
+    it 'understands a job' do
       payload = {
-          'jobs' => [
-              {'name' => 'testing', 'plan' => [] }
-          ]
+        'jobs' => [
+          { 'name' => 'testing', 'plan' => [] }
+        ]
       }.to_yaml
       pipeline = Station::Pipeline.from_yaml(payload)
       expect(pipeline.jobs.size).to eq 1
@@ -63,6 +63,36 @@ RSpec.describe 'When parsing a pipeline' do
       expect(job.public).to be_falsey
       expect(job.disable_manual_trigger).to be_falsey
       expect(job.interruptible).to be_falsey
+    end
+
+    it 'understands a step' do
+      payload = {
+        'jobs' => [
+          { 'name' => 'testing', 'plan' => [
+            { 'get' => 'resource-a' },
+            { 'put' => 'resource-b' },
+            { 'task' => 'task-name', 'config' => { 'platform' => 'linux' } },
+            { 'do' => [
+              'get' => 'resource-c'
+            ] },
+            { 'try' => {
+              'get' => 'resource-d'
+            } },
+            { 'aggregate' => [
+              'get' => 'resource-e'
+            ] }
+          ] }
+        ]
+      }.to_yaml
+      pipeline = Station::Pipeline.from_yaml(payload)
+      plan = pipeline.jobs[0].plan
+      expect(plan.size).to eq 6
+      expect(plan[0].get).to eq 'resource-a'
+      expect(plan[1].put).to eq 'resource-b'
+      expect(plan[2].task).to eq 'task-name'
+      expect(plan[3].do[0].get).to eq 'resource-c'
+      expect(plan[4].try.get).to eq 'resource-d'
+      expect(plan[5].aggregate[0].get).to eq 'resource-e'
     end
   end
 end

@@ -181,19 +181,27 @@ RSpec.describe 'when creating a mapping' do
         collection :plants, Plant
       end
 
-      obj = klass.new(plant: {leaves: 1})
+      obj = klass.new(plant: { leaves: 1 })
       expect(obj.plant.leaves).to eq 1
       expect(obj.plant).to be_instance_of(Tree)
 
-      obj = klass.new(plant: {flowers: 1})
+      obj = klass.new(plant: { flowers: 1 })
       expect(obj.plant.flowers).to eq 1
       expect(obj.plant).to be_instance_of(Flower)
 
-      obj = klass.new(plants: [{leaves: 1}, {flowers: 2}])
+      obj = klass.new(plants: [{ leaves: 1 }, { flowers: 2 }])
       expect(obj.plants[0]).to be_instance_of(Tree)
       expect(obj.plants[0].leaves).to eq 1
       expect(obj.plants[1]).to be_instance_of(Flower)
       expect(obj.plants[1].flowers).to eq 2
+
+      expect do
+        obj = klass.new(plant: { leaves: '1' })
+      end.to raise_error(Station::Mapping::RequiredType)
+
+      expect do
+        obj = klass.new(plants: [{ purple: 1 }])
+      end.to raise_error(Station::Mapping::UnknownProperty)
     end
   end
 end

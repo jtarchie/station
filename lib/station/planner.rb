@@ -8,8 +8,8 @@ module Station
         @steps = []
       end
 
-      def task(name)
-        @steps.push Task.new(name: name.to_s)
+      def task(ref)
+        @steps.push Task.new(name: ref.to_s, ref: ref)
       end
 
       def success(&block)
@@ -74,14 +74,14 @@ module Station
       end
     end
 
-    Task = Struct.new(:name, keyword_init: true) do
+    Task = Struct.new(:name, :ref, keyword_init: true) do
       def next(
         current: {},
         attempt: 1
       )
         return [] if current.key?(name) && current[name].size >= attempt
 
-        [name]
+        [self.ref]
       end
 
       def state(

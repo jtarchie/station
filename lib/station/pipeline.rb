@@ -94,7 +94,7 @@ module Station
       Aggregate = Class.new(Mapping)
       Step = Union(Get, Put, Task, Do, Try, Aggregate)
 
-      base = -> (klass) do
+      base = lambda do |klass|
         klass.property :on_success, Step
         klass.property :on_failure, Step
         klass.property :on_abort, Step
@@ -104,12 +104,12 @@ module Station
         klass.property :attempts, Integer
       end
 
-      base.(Task)
-      base.(Put)
-      base.(Get)
-      base.(Do)
-      base.(Aggregate)
-      base.(Try)
+      base.call(Task)
+      base.call(Put)
+      base.call(Get)
+      base.call(Do)
+      base.call(Aggregate)
+      base.call(Try)
 
       class Do < Mapping
         collection :do, Step, default: -> { [] }

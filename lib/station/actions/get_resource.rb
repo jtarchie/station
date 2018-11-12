@@ -8,7 +8,7 @@ module Station
     class GetResource
       Result = Struct.new(:payload, :stderr, keyword_init: true)
 
-      attr_reader :resource
+      attr_reader :resource, :params
 
       def initialize(
           resource: Resource,

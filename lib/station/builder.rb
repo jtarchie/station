@@ -10,18 +10,24 @@ module Station
 
     def plans
       plans = {}
+      resources = @pipeline.resources
       @pipeline.jobs.each do |job|
-        steps = job.plan.map do |step|
-          plans[job.name] = case step
-                            when Station::Pipeline::Jobs::Get
-                              resource_name = step.get
-                              resource = @pipeline.resources.find { |r| r.name == resource_name }
-                              serial do
-                                task Station::Actions::CheckResource.new(resource: resource)
-                                task Station::Actions::GetResource.new(resource: resource)
-                              end
-                            else
-                              raise "don't support this feature, yet"
+        plans[job.name] = serial do
+          job.plan.map do |step|
+            case step
+            when Station::Pipeline::Jobs::Get
+              resource_name = step.resource || step.get
+              resource = resources.find { |r| r.name == resource_name }
+              serial do
+                task Station::Actions::CheckResource.new(resource: resource)
+                task Station::Actions::GetResource.new(
+                  resource: resource,
+                  params: step.params
+                )
+              end
+            else
+              raise "don't support this feature, yet"
+            end
           end
         end
       end

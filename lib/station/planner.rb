@@ -140,6 +140,8 @@ module Station
     class Serial
       include Plan
 
+      attr_reader :steps
+
       def next(
         current: {},
         attempt: 1

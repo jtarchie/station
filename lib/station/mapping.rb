@@ -1,77 +1,19 @@
 # frozen_string_literal: true
 
+require_relative 'mapping/errors'
+require_relative 'mapping/custom_types'
+# rubocop:disable Style/CaseEquality
 module Station
   class Mapping
-    class RequiredValue < StandardError
-      def initialize(name)
-        super("'#{name}' is a required value")
-      end
-    end
-    class RequiredType < StandardError
-      def initialize(name, value, type)
-        super("'#{name}' is of type '#{value.class}', but needs to be of type '#{type}'")
-      end
-    end
-    class UnknownProperty < StandardError
-      def initialize(name)
-        super("'#{name}' is an unknown property or collection")
-      end
-    end
-
-    CustomHashType = Struct.new(:key, :value, keyword_init: true) do
-      def matches?(rhs)
-        rhs.is_a?(Hash) &&
-          rhs.keys.all? { |k| key === k } &&
-          rhs.values.all? { |v| value === v }
-      end
-    end
-
-    CustomArrayType = Struct.new(:value, keyword_init: true) do
-      def matches?(rhs)
-        rhs.is_a?(Array) &&
-          rhs.all? { |v| value === v }
-      end
-    end
-
-    CustomBooleanType = Class.new do
-      def matches?(rhs)
-        TrueClass === rhs || FalseClass === rhs
-      end
-    end
-
-    CustomUnionType = Struct.new(:types, keyword_init: true) do
-      def matches?(rhs)
-        types.any? do |t|
-          (t.respond_to?(:matches?) && t.matches?(rhs)) || t === rhs
-        end
-      end
-
-      def new(value)
-        evals = types.lazy.map do |type|
-          type.new(value)
-                rescue UnknownProperty => e
-                  e
-        end
-        assert = evals.find do |v|
-          !(UnknownProperty === v)
-        end
-        return assert if assert
-
-        raise(evals.find do |v|
-          UnknownProperty === v
-        end)
-      end
-    end
-
-    def self.Hash(key, value)
+    def self.Hash(key, value) # rubocop:disable Naming/MethodName
       CustomHashType.new(key: key, value: value)
     end
 
-    def self.Array(value)
+    def self.Array(value) # rubocop:disable Naming/MethodName
       CustomArrayType.new(value: value)
     end
 
-    def self.Union(*types)
+    def self.Union(*types) # rubocop:disable Naming/MethodName
       CustomUnionType.new(types: types)
     end
 
@@ -144,19 +86,21 @@ module Station
       collections = self.class.collections
 
       options.each do |name, value|
-        if expect = properties[name.to_s]
-          raise RequiredType.new(name, value, expect.type) unless expect.matches?(value)
-
-          @values[name.to_s] = expect.value(value)
-        elsif expect = collections[name.to_s]
-          raise RequiredType.new(name, value, expect.type) unless expect.matches?(value)
-
-          @values[name.to_s] = expect.value(value)
-        else
-          raise UnknownProperty, name
-        end
+        check_expectation(collections, name, properties, value)
       end
 
+      check_required_value(collections, properties)
+    end
+
+    def self.matches?(rhs)
+      keys = collections.keys + properties.keys
+      leftovers = rhs.keys.map(&:to_s) - keys
+      leftovers.empty?
+    end
+
+    private
+
+    def check_required_value(collections, properties)
       properties.each do |name, expect|
         raise RequiredValue, name if expect.required && !@values.key?(name)
       end
@@ -165,10 +109,14 @@ module Station
       end
     end
 
-    def self.matches?(rhs)
-      keys = collections.keys + properties.keys
-      leftovers = rhs.keys.map(&:to_s) - keys
-      leftovers.empty?
+    def check_expectation(collections, name, properties, value)
+      expect = properties[name.to_s] || collections[name.to_s]
+
+      raise UnknownProperty, name unless expect
+      raise RequiredType.new(name, value, expect.type) unless expect.matches?(value)
+
+      @values[name.to_s] = expect.value(value)
     end
   end
 end
+# rubocop:enable Style/CaseEquality

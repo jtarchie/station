@@ -68,9 +68,18 @@ module Station
         ].compact.uniq
 
         return s.first if s.size == 1
-        return Status::Failed if s.include?(Status::Failed)
+        return Status::FAILED if s.include?(Status::FAILED)
 
-        Status::Running
+        Status::RUNNING
+      end
+
+      private
+
+      def final_steps(attempt, current, steps)
+        steps += success.next(current: current, attempt: attempt) if plan_state(current: current, attempt: attempt) == Status::SUCCESS
+        steps += failure.next(current: current, attempt: attempt) if plan_state(current: current, attempt: attempt) == Status::FAILED
+        steps += finally.next(current: current, attempt: attempt) if steps.empty?
+        steps
       end
     end
 
@@ -91,7 +100,7 @@ module Station
 
         current.fetch(name, []).fetch(attempt - 1)
       rescue IndexError
-        Status::Unstarted
+        Status::UNSTARTED
       end
     end
 
@@ -109,17 +118,12 @@ module Station
             task.next(current: current, attempt: actual)
           end.flatten
           attempt = actual
-          return steps unless steps.empty?
-          next if steps.empty?
+          break unless steps.empty?
         end
 
-        steps += success.next(current: current, attempt: attempt) if plan_state(current: current, attempt: attempt) == Status::Success
-        steps += failure.next(current: current, attempt: attempt) if plan_state(current: current, attempt: attempt) == Status::Failed
-        steps += finally.next(current: current, attempt: attempt) if steps.empty?
+        steps = final_steps(attempt, current, steps)
         steps
       end
-
-      private
 
       def plan_state(
         current: {},
@@ -129,11 +133,11 @@ module Station
           step.state(current: current, attempt: attempt)
         end.compact.uniq
         return s[0] if s.size == 1
-        return Status::Running if s.include?(Status::Unstarted)
-        return Status::Running if s.include?(Status::Running)
-        return Status::Failed if s.include?(Status::Failed)
+        return Status::RUNNING if s.include?(Status::UNSTARTED)
+        return Status::RUNNING if s.include?(Status::RUNNING)
+        return Status::FAILED if s.include?(Status::FAILED)
 
-        Status::Running
+        Status::RUNNING
       end
     end
 
@@ -152,9 +156,9 @@ module Station
         1.step(@attempts).each do |actual|
           @steps.each do |step|
             case step.state(current: current, attempt: actual)
-            when Status::Success
+            when Status::SUCCESS
               next
-            when Status::Failed
+            when Status::FAILED
               failed = true
               steps.clear
               break
@@ -166,9 +170,8 @@ module Station
           break if steps.empty? && !failed
           break unless steps.empty?
         end
-        steps += success.next(current: current, attempt: attempt) if plan_state(current: current, attempt: attempt) == Status::Success
-        steps += failure.next(current: current, attempt: attempt) if plan_state(current: current, attempt: attempt) == Status::Failed
-        steps += finally.next(current: current, attempt: attempt)
+
+        steps = final_steps(attempt, current, steps)
         steps[0, 1].flatten
       end
 
@@ -182,9 +185,9 @@ module Station
           step.state(current: current, attempt: attempt)
         end.compact.uniq
         return s[0] if s.size == 1
-        return Status::Failed if s.include?(Status::Failed)
+        return Status::FAILED if s.include?(Status::FAILED)
 
-        Status::Running
+        Status::RUNNING
       end
     end
 
@@ -221,9 +224,9 @@ module Station
         attempt: 1
       )
         s = @steps.first.state(current: current, attempt: attempt)
-        return Status::Success if s == Status::Failed
+        return Status::SUCCESS if s == Status::FAILED
 
-        s || Status::Success
+        s || Status::SUCCESS
       end
     end
 

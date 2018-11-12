@@ -4,6 +4,12 @@ Style/Documentation:
   Enabled: false
 Metrics/LineLength:
   Enabled: false
+Metrics/ParameterLists:
+  Enabled: false
+RSpec/MultipleExpectations:
+  Enabled: false
+RSpec/FilePath:
+  Enabled: false
 
 AllCops:
   TargetRubyVersion: 2.5

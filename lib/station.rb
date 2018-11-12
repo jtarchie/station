@@ -4,10 +4,10 @@ module Station
   VERSION = '0.1.0'
 
   class Status
-    Unstarted = 'unstarted'
-    Running = 'running'
-    Success = 'success'
-    Failed = 'failed'
+    UNSTARTED = 'unstarted'
+    RUNNING = 'running'
+    SUCCESS = 'success'
+    FAILED = 'failed'
   end
 end
 

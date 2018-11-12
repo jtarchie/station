@@ -23,17 +23,26 @@ module Station
       end
 
       def perform!(version: {})
-        runner = Runner::Docker.new(
-          volumes: [Runner::Volume.new(mounts_dir, '/tmp/build/put')],
-          working_dir: '/tmp/build/put',
-          image: @resource_types.repository(name: @resource.type),
-          command: ['/opt/resource/out', '/tmp/build/put']
-        )
         runner.execute!(payload: {
                           source: @resource.source,
                           version: version,
                           params: @params
                         })
+        result(runner)
+      end
+
+      private
+
+      def runner
+        @runner ||= Runner::Docker.new(
+          volumes: [Runner::Volume.new(mounts_dir, '/tmp/build/put')],
+          working_dir: '/tmp/build/put',
+          image: @resource_types.repository(name: @resource.type),
+          command: ['/opt/resource/out', '/tmp/build/put']
+        )
+      end
+
+      def result(runner)
         Result.new(
           payload: JSON.parse(runner.stdout),
           stderr: runner.stderr

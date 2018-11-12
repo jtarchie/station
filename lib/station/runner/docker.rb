@@ -33,6 +33,42 @@ module Station
       end
 
       def execute!(payload:)
+        Open3.popen3(args.shelljoin) do |stdin, stdout, stderr, wait_thr|
+          write_stdin(payload, stdin)
+
+          read(stderr, stdout, wait_thr)
+        end
+      end
+
+      private
+
+      def read(stderr, stdout, wait_thr)
+        readers = [stdout, stderr]
+
+        while !!wait_thr.status
+          next if readers.empty?
+
+          reader = IO.select(readers)[0][0]
+          begin
+            output = reader.read_nonblock(1024)
+            print output if ENV['DEBUG']
+            case reader
+            when stdout then @stdout.write output
+            when stderr then @stderr.write output
+            end
+          rescue EOFError
+            readers.delete(reader)
+          end
+        end
+      end
+
+      def write_stdin(payload, stdin)
+        puts "stdin: #{payload.to_json}" if ENV['DEBUG']
+        stdin.write(payload.to_json)
+        stdin.close
+      end
+
+      def args
         args = ['docker', 'run', '-i', '--rm', '--privileged=false']
         @volumes.each do |volume|
           args += ['-v', "#{volume.from}:#{volume.to}"]
@@ -40,27 +76,6 @@ module Station
         args += ['-w', @working_dir]
         args += [@image]
         args += @command
-        Open3.popen3(args.shelljoin) do |stdin, stdout, stderr, wait_thr|
-          puts "stdin: #{payload.to_json}" if ENV['DEBUG']
-          stdin.write(payload.to_json)
-          stdin.close
-
-          readers = [stdout, stderr]
-
-          while !!wait_thr.status
-            next if readers.empty?
-
-            reader = IO.select(readers)[0][0]
-            begin
-              output = reader.read_nonblock(1024)
-              print output if ENV['DEBUG']
-              @stdout.write output if reader == stdout
-              @stderr.write output if reader == stderr
-            rescue EOFError
-              readers.delete(reader)
-            end
-          end
-        end
       end
     end
   end

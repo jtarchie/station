@@ -27,6 +27,12 @@ module Station
                           source: @resource.source,
                           version: version
                         })
+        result(runner)
+      end
+
+      private
+
+      def result(runner)
         Result.new(
           payload: JSON.parse(runner.stdout),
           stderr: runner.stderr

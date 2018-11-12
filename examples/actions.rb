@@ -37,14 +37,14 @@ while steps = plan.next(current: results)
     when Station::Actions::CheckResource
       result = step.perform!
       known_versions[step.resource.name] += result.payload
-      results[step.to_s] = [Station::Status::Success]
+      results[step.to_s] = [Station::Status::SUCCESS]
     when Station::Actions::GetResource
       step.perform!(
         version: known_versions[step.resource.name].last,
         destination_dir: volumes[step.resource.name]
       )
       system("ls -asl #{volumes[step.resource.name]}")
-      results[step.to_s] = [Station::Status::Success]
+      results[step.to_s] = [Station::Status::SUCCESS]
     end
   end
 end

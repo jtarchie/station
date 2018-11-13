@@ -75,4 +75,16 @@ RSpec.describe Station::Actions::CheckResource do
     end
     perform
   end
+
+  context 'when it exits gracefully' do
+    it 'has a status on the result' do
+
+    end
+  end
+
+  context 'when it fails' do
+    it 'has a status on the result' do
+
+    end
+  end
 end

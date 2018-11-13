@@ -24,9 +24,6 @@ describe Station::Actions::PutResource do
       params: {}
     )
     result = put.perform!(
-      version: {
-        'version' => 'abcd123'
-      },
       mounts_dir: File.join(base_dir, 'mounts')
     )
 

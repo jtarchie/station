@@ -20,7 +20,7 @@ module Station
         @resource_types = resource_types
       end
 
-      def perform!(version: {}, mounts_dir: Dir.mktmpdir)
+      def perform!(mounts_dir: Dir.mktmpdir)
         runner = Runner::Docker.new(
           volumes: [Runner::Volume.new(mounts_dir, '/tmp/build/put')],
           working_dir: '/tmp/build/put',
@@ -29,7 +29,6 @@ module Station
         )
         runner.execute!(payload: {
                           source: @resource.source,
-                          version: version,
                           params: @params
                         })
         result(runner)

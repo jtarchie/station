@@ -15,12 +15,21 @@ module Station
         plans[job.name] = serial do
           job.plan.map do |step|
             case step
-            when Station::Pipeline::Jobs::Get
+            when Station::Pipeline::Job::Get
               resource_name = step.resource || step.get
               resource = resources.find { |r| r.name == resource_name }
               serial do
                 task Station::Actions::CheckResource.new(resource: resource)
                 task Station::Actions::GetResource.new(
+                  resource: resource,
+                  params: step.params
+                )
+              end
+            when Station::Pipeline::Job::Put
+              resource_name = step.resource || step.put
+              resource = resources.find { |r| r.name == resource_name }
+              serial do
+                task Station::Actions::PutResource.new(
                   resource: resource,
                   params: step.params
                 )

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'yaml'
+
 module Station
   class Pipeline < Mapping
     class Resource < Mapping
@@ -12,7 +14,7 @@ module Station
       property :webhook_token, String
     end
 
-    class ResourceTypes < Mapping
+    class ResourceType < Mapping
       property :name, String, required: true
       property :type, String, required: true
       property :source, Hash(String, String), default: -> { {} }
@@ -22,7 +24,7 @@ module Station
       property :tags, Array(String), default: -> { [] }
     end
 
-    class Jobs < Mapping
+    class Job < Mapping
       class Get < Mapping
         property :get, String, required: true
         property :resource, String
@@ -80,8 +82,8 @@ module Station
         end
 
         property :task, String, required: true
-        property :config, Config, required: true
-        # property :file, String, required: true
+        property :config, Config
+        property :file, String
         property :privileged, boolean, default: -> { false }
         property :params, Hash(String, String)
         property :image, String
@@ -134,9 +136,16 @@ module Station
       collection :plan, Step, required: true
     end
 
+    class Group < Mapping
+      property :name, String, required: true
+      property :jobs, Array(String), default: -> { [] }
+      property :resources, Array(String), default: -> { [] }
+    end
+
     collection :resources, Pipeline::Resource
-    collection :jobs, Pipeline::Jobs
-    collection :resource_types, Pipeline::ResourceTypes
+    collection :jobs, Pipeline::Job
+    collection :resource_types, Pipeline::ResourceType
+    collection :groups, Pipeline::Group
 
     def self.from_yaml(payload)
       new(YAML.safe_load(payload))

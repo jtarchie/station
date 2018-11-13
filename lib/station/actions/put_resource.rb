@@ -13,15 +13,17 @@ module Station
       def initialize(
           resource: Resource,
           params: Hash,
-          resource_types: ResourceTypes.new
+          resource_types: ResourceTypes.new,
+          runner_klass: Runner::Docker
         )
         @resource = resource
         @params = params
         @resource_types = resource_types
+        @runner_klass = runner_klass
       end
 
       def perform!(mounts_dir: Dir.mktmpdir)
-        runner = Runner::Docker.new(
+        runner = @runner_klass.new(
           volumes: [Runner::Volume.new(mounts_dir, '/tmp/build/put')],
           working_dir: '/tmp/build/put',
           image: @resource_types.repository(name: @resource.type),

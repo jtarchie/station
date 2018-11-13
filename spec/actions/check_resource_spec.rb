@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Station::Actions::GetResource do
+RSpec.describe Station::Actions::CheckResource do
   let(:resource) do
     Station::Pipeline::Resource.new(
       name: 'mock',
@@ -32,48 +32,29 @@ RSpec.describe Station::Actions::GetResource do
   end
 
   def perform
-    get = described_class.new(
+    check = described_class.new(
       resource: resource,
-      params: {
-        'create_files_via_params' => {
-          'param' => 'param'
-        }
-      },
       runner_klass: klass
     )
-    get.perform!(
+    check.perform!(
       version: {
         'version' => 'abcd123'
-      },
-      destination_dir: '/custom/dir/name'
+      }
     )
   end
 
-  it 'passes a destination directory' do
+  it 'contains no volumes' do
     expect(klass).to receive(:new) do |args|
       volumes = args[:volumes]
-
-      expect(volumes[0].from).to eq '/custom/dir/name'
-      expect(volumes[0].to).to eq '/tmp/build/get'
-
-      command = args[:command]
-      expect(command.last).to eq '/tmp/build/get'
+      expect(volumes).to be_empty
     end.and_return(instance)
     perform
   end
 
-  it 'executes the in command' do
+  it 'executes the check command' do
     expect(klass).to receive(:new) do |args|
       command = args[:command]
-      expect(command).to eq ['/opt/resource/in', '/tmp/build/get']
-    end.and_return(instance)
-    perform
-  end
-
-  it 'uses the custom resource image' do
-    expect(klass).to receive(:new) do |args|
-      image = args[:image]
-      expect(image).to eq 'concourse/mock-resource:latest'
+      expect(command).to eq ['/opt/resource/check']
     end.and_return(instance)
     perform
   end
@@ -81,16 +62,15 @@ RSpec.describe Station::Actions::GetResource do
   it 'sets the working directory' do
     expect(klass).to receive(:new) do |args|
       dir = args[:working_dir]
-      expect(dir).to eq '/tmp/build/get'
+      expect(dir).to eq '/tmp/build/check'
     end.and_return(instance)
     perform
   end
 
-  it 'passes the version, params, and source' do
+  it 'passes the version and source' do
     expect(instance).to receive(:execute!) do |args|
       payload = args[:payload]
       expect(payload[:source]).to eq('create_files' => { 'source' => 'source' })
-      expect(payload[:params]).to eq('create_files_via_params' => { 'param' => 'param' })
       expect(payload[:version]).to eq('version' => 'abcd123')
     end
     perform

@@ -35,7 +35,7 @@ module Station
                 )
               end
             else
-              raise "don't support this feature, yet"
+              raise "don't support '#{step.class}' as a feature, yet"
             end
           end
         end

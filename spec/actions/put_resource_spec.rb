@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Station::Actions::GetResource do
+RSpec.describe Station::Actions::PutResource do
   let(:resource) do
     Station::Pipeline::Resource.new(
       name: 'mock',
@@ -32,7 +32,7 @@ RSpec.describe Station::Actions::GetResource do
   end
 
   def perform
-    get = described_class.new(
+    put = described_class.new(
       resource: resource,
       params: {
         'create_files_via_params' => {
@@ -41,11 +41,8 @@ RSpec.describe Station::Actions::GetResource do
       },
       runner_klass: klass
     )
-    get.perform!(
-      version: {
-        'version' => 'abcd123'
-      },
-      destination_dir: '/custom/dir/name'
+    put.perform!(
+      mounts_dir: '/custom/dir/name'
     )
   end
 
@@ -54,10 +51,10 @@ RSpec.describe Station::Actions::GetResource do
       volumes = args[:volumes]
 
       expect(volumes[0].from).to eq '/custom/dir/name'
-      expect(volumes[0].to).to eq '/tmp/build/get'
+      expect(volumes[0].to).to eq '/tmp/build/put'
 
       command = args[:command]
-      expect(command.last).to eq '/tmp/build/get'
+      expect(command.last).to eq '/tmp/build/put'
     end.and_return(instance)
     perform
   end
@@ -65,7 +62,7 @@ RSpec.describe Station::Actions::GetResource do
   it 'executes the in command' do
     expect(klass).to receive(:new) do |args|
       command = args[:command]
-      expect(command).to eq ['/opt/resource/in', '/tmp/build/get']
+      expect(command).to eq ['/opt/resource/out', '/tmp/build/put']
     end.and_return(instance)
     perform
   end
@@ -81,7 +78,7 @@ RSpec.describe Station::Actions::GetResource do
   it 'sets the working directory' do
     expect(klass).to receive(:new) do |args|
       dir = args[:working_dir]
-      expect(dir).to eq '/tmp/build/get'
+      expect(dir).to eq '/tmp/build/put'
     end.and_return(instance)
     perform
   end
@@ -91,7 +88,6 @@ RSpec.describe Station::Actions::GetResource do
       payload = args[:payload]
       expect(payload[:source]).to eq('create_files' => { 'source' => 'source' })
       expect(payload[:params]).to eq('create_files_via_params' => { 'param' => 'param' })
-      expect(payload[:version]).to eq('version' => 'abcd123')
     end
     perform
   end

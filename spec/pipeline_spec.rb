@@ -122,5 +122,17 @@ RSpec.describe 'When parsing a pipeline' do
       expect(pipeline.errors).not_to be_empty
       expect(pipeline).not_to be_valid
     end
+
+    it 'ensures puts reference a define resource' do
+      pipeline = Station::Pipeline.from_yaml({
+        'resources' => [],
+        'jobs' => [{
+          'name' => 'test',
+          'plan' => [{ 'put' => 'not-named' }]
+        }]
+      }.to_yaml)
+      expect(pipeline.errors).not_to be_empty
+      expect(pipeline).not_to be_valid
+    end
   end
 end

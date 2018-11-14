@@ -13,3 +13,5 @@ RSpec/FilePath:
 
 AllCops:
   TargetRubyVersion: 2.5
+  Exclude:
+  - 'tmp/**/*.rb'

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-
 require 'yaml'
 
 RSpec.describe 'When parsing a pipeline' do
@@ -12,6 +11,8 @@ RSpec.describe 'When parsing a pipeline' do
       ]
     }.to_yaml
     pipeline = Station::Pipeline.from_yaml(payload)
+    expect(pipeline.errors).to be_empty
+    expect(pipeline).to be_valid
     expect(pipeline.resources.size).to eq 1
 
     resource = pipeline.resources.first
@@ -31,6 +32,8 @@ RSpec.describe 'When parsing a pipeline' do
       ]
     }.to_yaml
     pipeline = Station::Pipeline.from_yaml(payload)
+    expect(pipeline.errors).to be_empty
+    expect(pipeline).to be_valid
     expect(pipeline.resource_types.size).to eq 1
 
     type = pipeline.resource_types.first
@@ -51,6 +54,8 @@ RSpec.describe 'When parsing a pipeline' do
         ]
       }.to_yaml
       pipeline = Station::Pipeline.from_yaml(payload)
+      expect(pipeline.errors).to be_empty
+      expect(pipeline).to be_valid
       expect(pipeline.jobs.size).to eq 1
 
       job = pipeline.jobs.first
@@ -67,6 +72,13 @@ RSpec.describe 'When parsing a pipeline' do
 
     it 'understands a step' do
       payload = {
+        'resources' => [
+          { 'name' => 'resource-a', 'type' => 'test' },
+          { 'name' => 'resource-b', 'type' => 'test' },
+          { 'name' => 'resource-c', 'type' => 'test' },
+          { 'name' => 'resource-d', 'type' => 'test' },
+          { 'name' => 'resource-e', 'type' => 'test' }
+        ],
         'jobs' => [
           { 'name' => 'testing', 'plan' => [
             { 'get' => 'resource-a', 'attempts' => 1 },
@@ -85,6 +97,8 @@ RSpec.describe 'When parsing a pipeline' do
         ]
       }.to_yaml
       pipeline = Station::Pipeline.from_yaml(payload)
+      expect(pipeline.errors).to be_empty
+      expect(pipeline).to be_valid
       plan = pipeline.jobs[0].plan
       expect(plan.size).to eq 6
       expect(plan[0].get).to eq 'resource-a'
@@ -93,6 +107,20 @@ RSpec.describe 'When parsing a pipeline' do
       expect(plan[3].do[0].get).to eq 'resource-c'
       expect(plan[4].try.get).to eq 'resource-d'
       expect(plan[5].aggregate[0].get).to eq 'resource-e'
+    end
+  end
+
+  context 'when validating the data' do
+    it 'ensures gets reference a define resource' do
+      pipeline = Station::Pipeline.from_yaml({
+        'resources' => [],
+        'jobs' => [{
+          'name' => 'test',
+          'plan' => [{ 'get' => 'not-named' }]
+        }]
+      }.to_yaml)
+      expect(pipeline.errors).not_to be_empty
+      expect(pipeline).not_to be_valid
     end
   end
 end

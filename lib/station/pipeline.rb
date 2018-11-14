@@ -32,6 +32,10 @@ module Station
         property :passed, Array(String)
         property :params, Hash(String, String)
         property :trigger, boolean, default: -> { false }
+
+        def resource_name
+          resource || get
+        end
       end
 
       class Put < Mapping
@@ -39,6 +43,10 @@ module Station
         property :resource, String
         property :params, Hash(String, String)
         property :get_params, Hash(String, String)
+
+        def resource_name
+          resource || put
+        end
       end
 
       class Task < Mapping
@@ -149,6 +157,23 @@ module Station
 
     def self.from_yaml(payload)
       new(YAML.safe_load(payload))
+    end
+
+    def valid?
+      errors.empty?
+    end
+
+    def errors
+      errors = []
+      resource_names = resources.map(&:name)
+      jobs.each do |job|
+        job.plan.each do |step|
+          next unless step.respond_to?(:resource_name)
+
+          errors << "job '#{job.name}' contains step that references unknown resource '#{step.resource_name}'" unless resource_names.include?(step.resource_name)
+        end
+      end
+      errors
     end
   end
 end

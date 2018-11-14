@@ -16,8 +16,7 @@ module Station
           job.plan.map do |step|
             case step
             when Station::Pipeline::Job::Get
-              resource_name = step.resource || step.get
-              resource = resources.find { |r| r.name == resource_name }
+              resource = resources.find { |r| r.name == step.resource_name }
               serial do
                 task Station::Actions::CheckResource.new(resource: resource)
                 task Station::Actions::GetResource.new(
@@ -26,8 +25,7 @@ module Station
                 )
               end
             when Station::Pipeline::Job::Put
-              resource_name = step.resource || step.put
-              resource = resources.find { |r| r.name == resource_name }
+              resource = resources.find { |r| r.name == step.resource_name }
               serial do
                 task Station::Actions::PutResource.new(
                   resource: resource,

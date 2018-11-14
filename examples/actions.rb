@@ -44,6 +44,8 @@ pipeline = Station::Pipeline.from_yaml(<<~YAML)
         repository: updated-repo
 YAML
 
+raise pipeline.errors.inspect unless pipeline.valid?
+
 builder = Station::Builder.new(pipeline: pipeline)
 plan    = builder.plans['testing']
 

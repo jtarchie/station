@@ -28,6 +28,7 @@ RSpec.describe Station::Actions::CheckResource do
     allow(instance).to receive(:execute!)
     allow(instance).to receive(:stdout).and_return('{}')
     allow(instance).to receive(:stderr)
+    allow(instance).to receive(:status)
     allow(klass).to receive(:new).and_return(instance)
   end
 
@@ -78,13 +79,17 @@ RSpec.describe Station::Actions::CheckResource do
 
   context 'when it exits gracefully' do
     it 'has a status on the result' do
-
+      allow(instance).to receive(:status).and_return(0)
+      result = perform
+      expect(result.status).to eq Station::Status::SUCCESS
     end
   end
 
   context 'when it fails' do
     it 'has a status on the result' do
-
+      allow(instance).to receive(:status).and_return(1)
+      result = perform
+      expect(result.status).to eq Station::Status::FAILED
     end
   end
 end

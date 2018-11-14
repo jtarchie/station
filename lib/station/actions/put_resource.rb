@@ -7,7 +7,7 @@ require 'tmpdir'
 module Station
   module Actions
     class PutResource
-      Result = Struct.new(:payload, :stderr, keyword_init: true)
+      Result = Struct.new(:payload, :stderr, :status, keyword_init: true)
       attr_reader :params, :resource
 
       def initialize(
@@ -41,7 +41,8 @@ module Station
       def result(runner)
         Result.new(
           payload: JSON.parse(runner.stdout),
-          stderr: runner.stderr
+          stderr: runner.stderr,
+          status: runner.status == 0 ? Station::Status::SUCCESS : Station::Status::FAILED
         )
       end
     end

@@ -5,7 +5,7 @@ require 'json'
 module Station
   module Actions
     class CheckResource
-      Result = Struct.new(:payload, :stderr, keyword_init: true)
+      Result = Struct.new(:payload, :stderr, :status, keyword_init: true)
       attr_reader :resource
 
       def initialize(
@@ -37,7 +37,8 @@ module Station
       def result(runner)
         Result.new(
           payload: JSON.parse(runner.stdout),
-          stderr: runner.stderr
+          stderr: runner.stderr,
+          status: runner.status == 0 ? Station::Status::SUCCESS : Station::Status::FAILED
         )
       end
     end

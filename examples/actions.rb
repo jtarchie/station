@@ -17,29 +17,29 @@ pipeline = Station::Pipeline.from_yaml(<<~YAML)
     plan:
     - get: repo
       resource: my-repo
-    - task: run-tests
-      config:
-        inputs:
-        - name: repo
-          path: station
-        outputs:
-        - name: updated-repo
-          path: another-station
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            repository: ruby
-        run:
-          path: bash
-          args:
-            - -c
-            - |
-              set -eux
-              cd station
-              bundle install
-              bundle exec rspec -t ~integration
-    - put: repo
+    # - task: run-tests
+    #   config:
+    #     inputs:
+    #     - name: repo
+    #       path: station
+    #     outputs:
+    #     - name: updated-repo
+    #       path: another-station
+    #     platform: linux
+    #     image_resource:
+    #       type: docker-image
+    #       source:
+    #         repository: ruby
+    #     run:
+    #       path: bash
+    #       args:
+    #         - -c
+    #         - |
+    #           set -eux
+    #           cd station
+    #           bundle install
+    #           bundle exec rspec -t ~integration
+    - put: my-repo
       params:
         repository: updated-repo
 YAML

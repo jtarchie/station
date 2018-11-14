@@ -17,18 +17,20 @@ module Station
           when Station::Actions::CheckResource
             result = step.perform!
             @versions[step.resource.name] += result.payload
-            results[step.to_s] = [Station::Status::SUCCESS]
+            results[step.to_s] = [result.status]
           when Station::Actions::GetResource
-            step.perform!(
+            result = step.perform!(
               version: @versions[step.resource.name].last,
               destination_dir: @volumes[step.resource.name]
             )
-            results[step.to_s] = [Station::Status::SUCCESS]
+            results[step.to_s] = [result.status]
           when Station::Actions::PutResource
-            step.perform!(
+            result = step.perform!(
               mounts_dir: @volumes[step.resource.name]
             )
-            results[step.to_s] = [Station::Status::SUCCESS]
+            results[step.to_s] = [result.status]
+          else
+            raise "unsupported step to execute: #{step.inspect}"
           end
         end
         steps = @plan.next(current: results)

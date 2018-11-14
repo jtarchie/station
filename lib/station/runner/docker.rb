@@ -32,11 +32,14 @@ module Station
         @stderr.string
       end
 
+      attr_reader :status
+
       def execute!(payload:)
         Open3.popen3(args.shelljoin) do |stdin, stdout, stderr, wait_thr|
           write_stdin(payload, stdin)
 
           read(stderr, stdout, wait_thr)
+          @status = wait_thr.value.exitstatus
         end
       end
 

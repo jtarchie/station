@@ -166,12 +166,19 @@ module Station
     def errors
       errors = []
       resource_names = resources.map(&:name)
+      referenced_resource_names = []
       jobs.each do |job|
         job.plan.each do |step|
           next unless step.respond_to?(:resource_name)
 
+          referenced_resource_names.push(step.resource_name)
           errors << "job '#{job.name}' contains step that references unknown resource '#{step.resource_name}'" unless resource_names.include?(step.resource_name)
         end
+      end
+      referenced_resource_names.uniq!
+      leftovers = resource_names - referenced_resource_names
+      leftovers.each do |name|
+        errors << "resource '#{name}' is declared, but never used in a job"
       end
       errors
     end

@@ -8,6 +8,9 @@ RSpec.describe 'When parsing a pipeline' do
     payload = {
       'resources' => [
         { 'name' => 'testing', 'type' => 'git' }
+      ],
+      'jobs' => [
+          {'name' => 'testing', 'plan' => [{'get' => 'testing'}]}
       ]
     }.to_yaml
     pipeline = Station::Pipeline.from_yaml(payload)
@@ -130,6 +133,15 @@ RSpec.describe 'When parsing a pipeline' do
           'name' => 'test',
           'plan' => [{ 'put' => 'not-named' }]
         }]
+      }.to_yaml)
+      expect(pipeline.errors).not_to be_empty
+      expect(pipeline).not_to be_valid
+    end
+
+    it 'ensures resources define are used' do
+      pipeline = Station::Pipeline.from_yaml({
+        'resources' => [{ 'name' => 'git', 'type' => 'git' }],
+        'jobs' => []
       }.to_yaml)
       expect(pipeline.errors).not_to be_empty
       expect(pipeline).not_to be_valid

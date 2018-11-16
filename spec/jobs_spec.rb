@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Station::Builder do
+RSpec.describe Station::Builder::Jobs do
   context 'when step is a put' do
     it 'performs a put' do
       pipeline = Station::Pipeline.from_hash(

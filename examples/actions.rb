@@ -46,7 +46,7 @@ YAML
 
 raise pipeline.errors.inspect unless pipeline.valid?
 
-builder = Station::Builder.new(pipeline: pipeline)
+builder = Station::Jobs.new(pipeline: pipeline)
 plan    = builder.plans['testing']
 
 known_versions = Hash.new { |hash, key| hash[key] = [] }

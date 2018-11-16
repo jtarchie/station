@@ -155,8 +155,8 @@ module Station
     collection :resource_types, Pipeline::ResourceType
     collection :groups, Pipeline::Group
 
-    def self.from_yaml(payload)
-      new(YAML.safe_load(payload))
+    def self.from_hash(payload)
+      new(payload)
     end
 
     def valid?

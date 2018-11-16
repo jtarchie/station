@@ -6,7 +6,7 @@ require 'securerandom'
 
 ENV['DEBUG'] = '1'
 
-pipeline = Station::Pipeline.from_yaml(<<~YAML)
+pipeline = Station::Pipeline.from_hash(YAML.safe_load(<<~YAML))
   resources:
   - name: my-repo
     type: git

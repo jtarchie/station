@@ -12,8 +12,8 @@ RSpec.describe 'When parsing a pipeline' do
       'jobs' => [
           {'name' => 'testing', 'plan' => [{'get' => 'testing'}]}
       ]
-    }.to_yaml
-    pipeline = Station::Pipeline.from_yaml(payload)
+    }
+    pipeline = Station::Pipeline.from_hash(payload)
     expect(pipeline.errors).to be_empty
     expect(pipeline).to be_valid
     expect(pipeline.resources.size).to eq 1
@@ -33,8 +33,8 @@ RSpec.describe 'When parsing a pipeline' do
       'resource_types' => [
         { 'name' => 'testing', 'type' => 'git' }
       ]
-    }.to_yaml
-    pipeline = Station::Pipeline.from_yaml(payload)
+    }
+    pipeline = Station::Pipeline.from_hash(payload)
     expect(pipeline.errors).to be_empty
     expect(pipeline).to be_valid
     expect(pipeline.resource_types.size).to eq 1
@@ -55,8 +55,8 @@ RSpec.describe 'When parsing a pipeline' do
         'jobs' => [
           { 'name' => 'testing', 'plan' => [] }
         ]
-      }.to_yaml
-      pipeline = Station::Pipeline.from_yaml(payload)
+      }
+      pipeline = Station::Pipeline.from_hash(payload)
       expect(pipeline.errors).to be_empty
       expect(pipeline).to be_valid
       expect(pipeline.jobs.size).to eq 1
@@ -98,8 +98,8 @@ RSpec.describe 'When parsing a pipeline' do
             ] }
           ] }
         ]
-      }.to_yaml
-      pipeline = Station::Pipeline.from_yaml(payload)
+      }
+      pipeline = Station::Pipeline.from_hash(payload)
       expect(pipeline.errors).to be_empty
       expect(pipeline).to be_valid
       plan = pipeline.jobs[0].plan
@@ -115,34 +115,34 @@ RSpec.describe 'When parsing a pipeline' do
 
   context 'when validating the data' do
     it 'ensures gets reference a define resource' do
-      pipeline = Station::Pipeline.from_yaml({
+      pipeline = Station::Pipeline.from_hash({
         'resources' => [],
         'jobs' => [{
           'name' => 'test',
           'plan' => [{ 'get' => 'not-named' }]
         }]
-      }.to_yaml)
+      })
       expect(pipeline.errors).not_to be_empty
       expect(pipeline).not_to be_valid
     end
 
     it 'ensures puts reference a define resource' do
-      pipeline = Station::Pipeline.from_yaml({
+      pipeline = Station::Pipeline.from_hash({
         'resources' => [],
         'jobs' => [{
           'name' => 'test',
           'plan' => [{ 'put' => 'not-named' }]
         }]
-      }.to_yaml)
+      })
       # expect(pipeline.errors).not_to be_empty
       expect(pipeline).not_to be_valid
     end
 
     it 'ensures resources define are used' do
-      pipeline = Station::Pipeline.from_yaml({
+      pipeline = Station::Pipeline.from_hash({
         'resources' => [{ 'name' => 'git', 'type' => 'git' }],
         'jobs' => []
-      }.to_yaml)
+      })
       expect(pipeline.errors).not_to be_empty
       expect(pipeline).not_to be_valid
     end

@@ -168,11 +168,21 @@ module Station
       resource_names = resources.map(&:name)
       referenced_resource_names = []
       jobs.each do |job|
-        job.plan.each do |step|
-          next unless step.respond_to?(:resource_name)
+        steps = job.plan.dup
+        while !steps.empty?
+          step = steps.pop
 
-          referenced_resource_names.push(step.resource_name)
-          errors << "job '#{job.name}' contains step that references unknown resource '#{step.resource_name}'" unless resource_names.include?(step.resource_name)
+          case step
+          when Station::Pipeline::Job::Try
+            steps << step.try.dup
+          when Station::Pipeline::Job::Aggregate
+            steps += step.aggregate.dup
+          when Station::Pipeline::Job::Do
+            steps += step.do.dup
+          when Station::Pipeline::Job::Get, Station::Pipeline::Job::Put
+            referenced_resource_names.push(step.resource_name)
+            errors << "job '#{job.name}' contains step that references unknown resource '#{step.resource_name}'" unless resource_names.include?(step.resource_name)
+          end
         end
       end
       referenced_resource_names.uniq!

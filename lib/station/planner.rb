@@ -3,9 +3,11 @@
 module Station
   module Planner
     module Plan
-      def initialize(attempts: 1)
+      attr_reader :steps
+
+      def initialize(attempts: 1, steps: [])
         @attempts = attempts
-        @steps = []
+        @steps = steps
       end
 
       def task(ref)
@@ -143,8 +145,6 @@ module Station
 
     class Serial
       include Plan
-
-      attr_reader :steps
 
       def next(
         current: {},

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'yaml'
 
 RSpec.describe 'When parsing a pipeline' do
   it 'understands resources' do
@@ -10,7 +9,7 @@ RSpec.describe 'When parsing a pipeline' do
         { 'name' => 'testing', 'type' => 'git' }
       ],
       'jobs' => [
-          {'name' => 'testing', 'plan' => [{'get' => 'testing'}]}
+        { 'name' => 'testing', 'plan' => [{ 'get' => 'testing' }] }
       ]
     }
     pipeline = Station::Pipeline.from_hash(payload)
@@ -115,34 +114,34 @@ RSpec.describe 'When parsing a pipeline' do
 
   context 'when validating the data' do
     it 'ensures gets reference a define resource' do
-      pipeline = Station::Pipeline.from_hash({
+      pipeline = Station::Pipeline.from_hash(
         'resources' => [],
         'jobs' => [{
           'name' => 'test',
           'plan' => [{ 'get' => 'not-named' }]
         }]
-      })
+      )
       expect(pipeline.errors).not_to be_empty
       expect(pipeline).not_to be_valid
     end
 
     it 'ensures puts reference a define resource' do
-      pipeline = Station::Pipeline.from_hash({
+      pipeline = Station::Pipeline.from_hash(
         'resources' => [],
         'jobs' => [{
           'name' => 'test',
           'plan' => [{ 'put' => 'not-named' }]
         }]
-      })
+      )
       # expect(pipeline.errors).not_to be_empty
       expect(pipeline).not_to be_valid
     end
 
     it 'ensures resources define are used' do
-      pipeline = Station::Pipeline.from_hash({
+      pipeline = Station::Pipeline.from_hash(
         'resources' => [{ 'name' => 'git', 'type' => 'git' }],
         'jobs' => []
-      })
+      )
       expect(pipeline.errors).not_to be_empty
       expect(pipeline).not_to be_valid
     end

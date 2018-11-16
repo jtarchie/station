@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'yaml'
-
 module Station
   class Pipeline < Mapping
     class Resource < Mapping
@@ -169,7 +167,7 @@ module Station
       referenced_resource_names = []
       jobs.each do |job|
         steps = job.plan.dup
-        while !steps.empty?
+        until steps.empty?
           step = steps.pop
 
           case step

@@ -52,7 +52,7 @@ plan    = builder.plans['testing']
 known_versions = Hash.new { |hash, key| hash[key] = [] }
 volumes = Hash.new { |hash, key| hash[key] = File.expand_path(File.join(__dir__, '..', 'tmp', SecureRandom.hex)) }
 
-executor = Station::Execute.new(
+executor = Station::Executor::Job.new(
   plan: plan,
   versions: known_versions,
   volumes: volumes

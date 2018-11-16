@@ -39,9 +39,9 @@ pipeline = Station::Pipeline.from_hash(YAML.safe_load(<<~YAML))
     #           cd station
     #           bundle install
     #           bundle exec rspec -t ~integration
-    - put: my-repo
-      params:
-        repository: updated-repo
+    # - put: my-repo
+    #   params:
+    #     repository: updated-repo
 YAML
 
 raise pipeline.errors.inspect unless pipeline.valid?

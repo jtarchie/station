@@ -19,7 +19,7 @@ module Station
     private
 
     def plans_for_steps(steps)
-      plans = steps.map do |step|
+      steps.map do |step|
         case step
         when Station::Pipeline::Job::Get
           plan_for_get(step)
@@ -50,7 +50,7 @@ module Station
     end
 
     def plan_for_get(step)
-      resource = @pipeline.resources.find { |r| r.name == step.resource_name }
+      resource = resource_used_in_step(step)
       serial do
         task Station::Actions::CheckResource.new(resource: resource)
         task Station::Actions::GetResource.new(
@@ -60,8 +60,12 @@ module Station
       end
     end
 
+    def resource_used_in_step(step)
+      @pipeline.resources.find {|r| r.name == step.resource_name}
+    end
+
     def plan_for_put(step)
-      resource = @pipeline.resources.find { |r| r.name == step.resource_name }
+      resource = resource_used_in_step(step)
       serial do
         task Station::Actions::PutResource.new(
           resource: resource,

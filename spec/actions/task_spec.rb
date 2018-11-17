@@ -1,16 +1,18 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe Station::Actions::Task do
   let(:config) do
     Station::Pipeline::Job::Task::Config.new(
-                                            platform: 'linux',
-                                            run: {
-                                                path: 'bash'
-                                            },
-                                            image_resource: {
-                                                type: 'docker-image',
-                                                source: {}
-                                            }
+      platform: 'linux',
+      run: {
+        path: 'bash'
+      },
+      image_resource: {
+        type: 'docker-image',
+        source: {}
+      }
     )
   end
 
@@ -20,7 +22,7 @@ RSpec.describe Station::Actions::Task do
 
   let(:klass) do
     class_double('Station::Runner::Docker')
-        .as_stubbed_const(transfer_nested_constants: true)
+      .as_stubbed_const(transfer_nested_constants: true)
   end
 
   before do
@@ -33,8 +35,8 @@ RSpec.describe Station::Actions::Task do
 
   def perform
     check = described_class.new(
-        config: config,
-        runner_klass: klass
+      config: config,
+      runner_klass: klass
     )
     check.perform!
   end

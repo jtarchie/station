@@ -43,5 +43,6 @@ describe Station::Actions::GetResource do
 
     expect(result.payload).to eq('metadata' => nil, 'version' => { 'version' => 'abcd123' })
     expect(result.stderr).to include 'fetching version: abcd123'
+    expect(result.status).to eq Station::Status::SUCCESS
   end
 end

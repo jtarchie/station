@@ -74,7 +74,7 @@ module Station
           class Run < Mapping
             property :path, String, required: true
             property :args, Array(String), default: -> { [] }
-            property :dir, String
+            property :dir, String, default: -> { '.' }
             property :user, String
           end
 
@@ -84,7 +84,7 @@ module Station
           property :run, Run
           collection :inputs, Input
           collection :outputs, Output
-          collection :cached, Cache
+          collection :caches, Cache
         end
 
         property :task, String, required: true

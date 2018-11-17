@@ -7,3 +7,4 @@ end
 require_relative 'actions/check_resource'
 require_relative 'actions/get_resource'
 require_relative 'actions/put_resource'
+require_relative 'actions/task'

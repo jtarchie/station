@@ -13,6 +13,8 @@ module Station
           working_dir:,
           image:,
           command:,
+          user: nil,
+          env: {},
           stdout: StringIO.new,
           stderr: StringIO.new
         )
@@ -22,6 +24,8 @@ module Station
         @command = command
         @stderr = stderr
         @stdout = stdout
+        @user = user
+        @env = env
       end
 
       def stdout
@@ -77,6 +81,10 @@ module Station
           args += ['-v', "#{volume.from}:#{volume.to}"]
         end
         args += ['-w', @working_dir]
+        args += ['-u', @user] if @user
+        @env.each do |key, value|
+          args += ['-e', "#{key}=#{value}"]
+        end
         args += [@image]
         args += @command
       end

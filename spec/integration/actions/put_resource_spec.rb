@@ -29,5 +29,6 @@ describe Station::Actions::PutResource do
 
     expect(result.payload).to eq ({ 'metadata' => [{ 'name' => 'key', 'value' => 'value' }], 'version' => { 'privileged' => 'true', 'version' => '' } })
     expect(result.stderr).to include 'pushing version'
+    expect(result.status).to eq Station::Status::SUCCESS
   end
 end

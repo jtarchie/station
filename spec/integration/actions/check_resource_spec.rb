@@ -17,6 +17,7 @@ describe Station::Actions::CheckResource do
       expect(result.payload).to eq([
                                      { 'version' => '', 'privileged' => 'true' }
                                    ])
+      expect(result.status).to eq Station::Status::SUCCESS
     end
   end
 
@@ -36,6 +37,7 @@ describe Station::Actions::CheckResource do
       expect(result.payload).to eq [
         { 'version' => 'some-version', 'privileged' => 'true' }
       ]
+      expect(result.status).to eq Station::Status::SUCCESS
     end
   end
 end

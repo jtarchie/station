@@ -81,7 +81,7 @@ module Station
           property :platform, String, required: true
           property :image_resource, ImageResource
           property :params, Hash(String, String)
-          property :run, Run
+          property :run, Run, required: true
           collection :inputs, Input
           collection :outputs, Output
           collection :caches, Cache

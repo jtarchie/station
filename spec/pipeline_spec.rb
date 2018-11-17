@@ -85,7 +85,10 @@ RSpec.describe 'When parsing a pipeline' do
           { 'name' => 'testing', 'plan' => [
             { 'get' => 'resource-a', 'attempts' => 1 },
             { 'put' => 'resource-b' },
-            { 'task' => 'task-name', 'config' => { 'platform' => 'linux' } },
+            { 'task' => 'task-name', 'config' => {
+              'platform' => 'linux',
+              'run' => { 'path' => 'bash' }
+            } },
             { 'do' => [
               'get' => 'resource-c'
             ] },

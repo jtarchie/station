@@ -36,7 +36,7 @@ module Station
 
       def runner(destination_dir)
         @runner_klass.new(
-          volumes: [Runner::Volume.new(destination_dir, '/tmp/build/get')],
+          volumes: [Runner::Volume.new(from: destination_dir, to: '/tmp/build/get')],
           working_dir: '/tmp/build/get',
           image: @resource_types.repository(name: @resource.type),
           command: ['/opt/resource/in', '/tmp/build/get']

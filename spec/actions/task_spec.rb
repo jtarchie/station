@@ -12,7 +12,11 @@ RSpec.describe Station::Actions::Task do
       image_resource: {
         type: 'docker-image',
         source: {}
-      }
+      },
+      inputs: [
+        { name: 'testing-input' },
+        { name: 'testing-input-with-dir', path: 'custom-dir', optional: true }
+      ]
     )
   end
 
@@ -29,16 +33,40 @@ RSpec.describe Station::Actions::Task do
     allow(instance).to receive(:execute!)
     allow(instance).to receive(:stdout)
     allow(instance).to receive(:stderr)
-    allow(instance).to receive(:status)
+    allow(instance).to receive(:status).and_return(0)
     allow(klass).to receive(:new).and_return(instance)
   end
 
-  def perform
+  def perform(volumes: [Station::Runner::Volume.new(from: '/tmp', to: 'testing-input')])
     check = described_class.new(
       config: config,
       runner_klass: klass
     )
-    check.perform!
+    check.perform!(
+      volumes: volumes
+    )
+  end
+
+  context 'when it has inputs' do
+    fit 'requires the input to be defined as a volume' do
+      result = perform(
+        volumes: [
+          Station::Runner::Volume.new(from: '/tmp', to: 'custom-dir')
+        ]
+      )
+      expect(result.status).to eq Station::Status::ERROR
+    end
+
+    context 'when the input is optional' do
+      it 'does not require the input to be defined as a volume' do
+        result = perform(
+          volumes: [
+            Station::Runner::Volume.new(from: '/tmp', to: 'testing-input')
+          ]
+        )
+        expect(result.status).to eq Station::Status::SUCCESS
+      end
+    end
   end
 
   context 'when it exits gracefully' do

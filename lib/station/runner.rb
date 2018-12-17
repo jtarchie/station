@@ -2,7 +2,7 @@
 
 module Station
   module Runner
-    Volume = Struct.new(:from, :to)
+    Volume = Struct.new(:from, :to, keyword_init: true)
   end
 end
 

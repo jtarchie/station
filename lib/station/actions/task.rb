@@ -10,9 +10,20 @@ module Station
         @runner_klass = runner_klass
       end
 
-      def perform!
+      def perform!(volumes:)
+        @config.inputs.each do |input|
+          next if input.optional
+
+          volume = volumes.find { |v| v.to == input.path }
+          unless volume
+            return Result.new(
+              status: Station::Status::ERROR
+            )
+          end
+        end
+
         runner = @runner_klass.new(
-          volumes: [],
+          volumes: volumes,
           working_dir: File.join('/tmp/build/task', @config.run.dir),
           image: [@config.image_resource.source['repository'], @config.image_resource.source['tag']].join(':'),
           command: [@config.run.path] + @config.run.args,

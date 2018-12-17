@@ -61,7 +61,7 @@ module Station
         default: default
       )
       define_method(name.to_s) do
-        @values.fetch(name.to_s, self.class.collections[name.to_s].value(default.call))
+        @values.fetch(name.to_s, self.class.collections[name.to_s].value(instance_eval(&default)))
       end
     end
 
@@ -76,7 +76,7 @@ module Station
         default: default
       )
       define_method(name.to_s) do
-        @values.fetch(name.to_s, default.call)
+        @values.fetch(name.to_s, instance_eval(&default))
       end
     end
 

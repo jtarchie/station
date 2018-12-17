@@ -24,7 +24,7 @@ module Station
 
       def perform!(mounts_dir: Dir.mktmpdir)
         runner = @runner_klass.new(
-          volumes: [Runner::Volume.new(mounts_dir, '/tmp/build/put')],
+          volumes: [Runner::Volume.new(from: mounts_dir, to: '/tmp/build/put')],
           working_dir: '/tmp/build/put',
           image: @resource_types.repository(name: @resource.type),
           command: ['/opt/resource/out', '/tmp/build/put']

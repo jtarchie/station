@@ -33,7 +33,7 @@ describe Station::Actions::Task do
       caches: []
     )
     task = described_class.new(config: config)
-    result = task.perform!
+    result = task.perform!(volumes: [])
     expect(result.stdout).to include 'user: nobody'
     expect(result.stdout).to include 'path: /tmp/build/task/testing'
     expect(result.stdout).to include 'hello world'

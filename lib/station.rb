@@ -5,6 +5,7 @@ module Station
 
   class Status
     FAILED = 'failed'
+    ERROR = 'error'
     RUNNING = 'running'
     SUCCESS = 'success'
     UNSTARTED = 'unstarted'

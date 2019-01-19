@@ -58,7 +58,7 @@ module Station
 
           class Input < Mapping
             property :name, String, required: true
-            property :path, String
+            property :path, String, default: -> { name }
             property :optional, boolean, default: -> { false }
           end
 

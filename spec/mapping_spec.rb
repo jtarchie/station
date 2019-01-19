@@ -15,7 +15,7 @@ RSpec.describe 'when creating a mapping' do
       expect(obj.name).to eq 'custom'
     end
 
-    it 'handles default values referencing other properties' do
+    fit 'handles default values referencing other properties' do
       klass = Class.new(Station::Mapping) do
         property :age, Integer
         property :age_string, String, default: -> { age.to_s }
@@ -24,7 +24,7 @@ RSpec.describe 'when creating a mapping' do
       expect(obj.age_string).to eq '100'
 
       obj = klass.new(age_string: '1', age: 100)
-      expect(obj.name).to eq '1'
+      expect(obj.age_string).to eq '1'
     end
 
     it 'handles required values' do

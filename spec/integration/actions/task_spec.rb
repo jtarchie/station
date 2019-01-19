@@ -4,9 +4,6 @@ require 'spec_helper'
 require 'securerandom'
 
 describe Station::Actions::Task do
-  # platform
-  # image_resource
-  # run - path, args, dir, user
   it 'can have all the things' do
     config = Station::Pipeline::Job::Task::Config.new(
       platform: 'linux',

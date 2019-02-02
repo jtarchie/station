@@ -16,11 +16,13 @@ module Station
           steps.each do |step|
             case step
             when Station::Actions::CheckResource
-              peform_check(results, step)
+              perform_check(results, step)
             when Station::Actions::GetResource
-              peform_get(results, step)
+              perform_get(results, step)
             when Station::Actions::PutResource
-              peform_put(results, step)
+              perform_put(results, step)
+            when Station::Actions::Task
+              perform_task(results, step)
             else
               raise "unsupported step to execute: #{step.inspect}"
             end
@@ -32,14 +34,21 @@ module Station
 
       private
 
-      def peform_put(results, step)
+      def perform_task(results, step)
+        result = step.perform!(
+          volumes: @volumes
+        )
+        results[step.to_s] = [result.status]
+      end
+
+      def perform_put(results, step)
         result = step.perform!(
           mounts_dir: @volumes[step.resource.name]
         )
         results[step.to_s] = [result.status]
       end
 
-      def peform_get(results, step)
+      def perform_get(results, step)
         result = step.perform!(
           version: @versions[step.resource.name].last,
           destination_dir: @volumes[step.resource.name]
@@ -47,7 +56,7 @@ module Station
         results[step.to_s] = [result.status]
       end
 
-      def peform_check(results, step)
+      def perform_check(results, step)
         result = step.perform!
         @versions[step.resource.name] += result.payload
         results[step.to_s] = [result.status]

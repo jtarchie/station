@@ -32,9 +32,19 @@ module Station
             plan_for_try(step)
           when Station::Pipeline::Job::Aggregate
             plan_for_aggregate(step)
+          when Station::Pipeline::Job::Task
+            plan_for_task(step)
           else
             raise "don't support '#{step.class}' as a feature, yet"
           end
+        end
+      end
+
+      def plan_for_task(step)
+        serial do
+          task Station::Actions::Task.new(
+            config: step.config
+          )
         end
       end
 

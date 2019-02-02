@@ -17,36 +17,36 @@ pipeline = Station::Pipeline.from_hash(YAML.safe_load(<<~YAML))
     plan:
     - get: repo
       resource: my-repo
-    # - task: run-tests
-    #   config:
-    #     inputs:
-    #     - name: repo
-    #       path: station
-    #     outputs:
-    #     - name: updated-repo
-    #       path: another-station
-    #     platform: linux
-    #     image_resource:
-    #       type: docker-image
-    #       source:
-    #         repository: ruby
-    #     run:
-    #       path: bash
-    #       args:
-    #         - -c
-    #         - |
-    #           set -eux
-    #           cd station
-    #           bundle install
-    #           bundle exec rspec -t ~integration
-    # - put: my-repo
-    #   params:
-    #     repository: updated-repo
+    - task: run-tests
+      config:
+        inputs:
+        - name: repo
+          path: station
+        outputs:
+        - name: updated-repo
+          path: another-station
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ruby
+        run:
+          path: bash
+          args:
+            - -c
+            - |
+              set -eux
+              cd station
+              bundle install
+              bundle exec rspec -t ~integration
+    - put: my-repo
+      params:
+        repository: updated-repo
 YAML
 
 raise pipeline.errors.inspect unless pipeline.valid?
 
-builder = Station::Jobs.new(pipeline: pipeline)
+builder = Station::Builder::Jobs.new(pipeline: pipeline)
 plan    = builder.plans['testing']
 
 known_versions = Hash.new { |hash, key| hash[key] = [] }

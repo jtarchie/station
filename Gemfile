@@ -5,3 +5,5 @@ source 'https://rubygems.org'
 gem 'rspec'
 gem 'rubocop'
 gem 'rubocop-rspec'
+
+ruby '2.6'

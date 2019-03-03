@@ -34,8 +34,8 @@ module Station
       def new(value)
         evals = types.lazy.map do |type|
           type.new(value)
-                rescue UnknownProperty => e
-                  e
+        rescue UnknownProperty => e
+          e
         end
         assert = evals.find do |v|
           !(UnknownProperty === v)

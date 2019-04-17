@@ -63,6 +63,10 @@ module Station
       def plan_for_get(step)
         resource = resource_used_in_step(step)
         serial do
+          task Station::Actions::TriggerResource.new(
+            resource: resource,
+            passed: step.passed,
+          ) if step.trigger
           task Station::Actions::CheckResource.new(resource: resource)
           task Station::Actions::GetResource.new(
             resource: resource,
